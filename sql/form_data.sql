@@ -1,5 +1,5 @@
 -- Funcio que retorna una taula amb tots els valors necesaris pel formulari.
-CREATE OR REPLACE FUNCTION ficha_tecnica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_classi text, descr_classi text, codi_zones text[] percent_zones numeric[])
+CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_classi text, descr_classi text, codi_zones text[] percent_zones numeric[])
 AS $$
 
   WITH
