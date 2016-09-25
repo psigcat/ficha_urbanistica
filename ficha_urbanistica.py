@@ -1,7 +1,8 @@
 """Main file of the project ficha_urbanistica. This contains the main class as well as all the importan work."""
 
 # TODO add imports
-import credentials
+import db_credentials
+DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(db_credentials.host, db_credentials.port, db_credentials.dbname, db_credentials.user, db_credentials.password)
 
 class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
