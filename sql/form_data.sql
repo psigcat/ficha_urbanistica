@@ -19,8 +19,8 @@ AS $$
     _sector.descr AS descr_sector,
     _classi.codi AS codi_classi,
     _classi.descr AS descr_classi,
-    ARRAY(SELECT codi FROM _zones ORDER BY percent DESC) AS codi_zones,
-    ARRAY(SELECT percent FROM _zones ORDER BY percent DESC) AS percent_zones
+    ARRAY(SELECT codi FROM _zones ORDER BY percent DESC, codi ASC) AS codi_zones,
+    ARRAY(SELECT percent FROM _zones ORDER BY percent DESC, codi ASC) AS percent_zones
 
   FROM
     _parcela,
