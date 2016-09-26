@@ -1,5 +1,5 @@
 -- Funcio que retorna una taula amb tots els valors necesaris pel formulari.
-CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_classi text, descr_classi text, codi_zones text[] percent_zones numeric[])
+CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_classi text, descr_classi text, codi_zones text[], percent_zones numeric[])
 AS $$
 
   WITH
@@ -51,6 +51,7 @@ AS $$
       ) AS _zones
       WHERE percent >= 3
       GROUP BY _zones.codi
+      LIMIT 4 -- Maxim nombre que es pot mostrar
     ) _zones;
 
 $$ LANGUAGE SQL;
