@@ -1,8 +1,20 @@
 """Main file of the project ficha_urbanistica. This contains the main class as well as all the importan work."""
 
 # TODO add imports
+
+import os
+import psycopg2
 import db_credentials
+
+from copy import deepcopy
+
+from PyQt4.uic import loadUi
+
 DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(db_credentials.host, db_credentials.port, db_credentials.dbname, db_credentials.user, db_credentials.password)
+LAYER_NAME = ""
+ID_STR = "ninterno"
+REPORTS_FOLDER = os.path.dirname(os.path.abspath(__file__)) + "/reports/"
+
 
 class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
@@ -13,6 +25,7 @@ class FichaUrbanistica:
 
 		# Saving iface to be reachable from the other functions
 		self.iface = iface
+
 
 		# Connecting to the database
 		try:
@@ -25,13 +38,16 @@ class FichaUrbanistica:
 			print u'No es carregarà el plugin.'
 			return # This return means there is no trigger set
 
-		# Container for all the query information 
-		self.info = None;
-
 
 
 	def initGui(self):
 		"""Called when the gui must be generated."""
+
+		# Get the ui
+		uiFile = QFile(os.path.dirname(os.path.abspath(__file__))+'/ui/form.ui')
+		uiFile.open(QFile.ReadOnly)
+		self.ui = loadUi(uiFile)
+		uiFile.close();
 
 		pass
 
@@ -46,27 +62,103 @@ class FichaUrbanistica:
 
 	def run(self):
 		"""Called when the plugin's icon is pressed."""
+		
+		# Get the active layer (where the selected form is).
+		layer = self.iface.activeLayer()
 
-		pass
+		# Make sure it is the layer we think it is.
+		if (layer.name() != LAYER_NAME)
+			return
 
 
-
-	def querySelectedInfo(self):
-		"""Querys all the necesary information from the database about the selection."""
-
-		# Get the selection# Gets the selected layer
-        layer = self.iface.activeLayer()
-
-        # If the selected layer is not the correct type, do nothing and return
-        if layer == None or layer.type() != QgsMapLayer.VectorLayer:
+		# single feature
+		if len(features) != 1:
             return
+		openForm(features[0][ID_STR])
 
-        # Get the selected feature AKA plot). Only a single one (end if there are none or more).
-        features = layer.selectedFeatures()
-        if len(features) != 1:
-            return
-		feature = features[0]
+		# Multiple feature support
+		# if len(features) < 1:
+		#	return
+		# elif len(features) == 1:
+		#	openForm(features[0][ID_STR])
+		# else:
+		#	while feature in features:
+		#		thread.start_new_thread(openform, (feature[ID_STR]))
 
-		# Query the information and save it to info
-		self.cursor.execute("SELECT ficha_tecnica({:s});".format(feature["ninterno"]))
-		self.info = self.cursor.fetchall()
+
+	def openForm(self, id):
+		"""Opens the form which shows the information to the user."""
+
+		# This function supports multiple instances
+
+		# Query the necesary information
+		info = queryInfo(id)
+
+		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+		dialog.ui = deepcopy(self.ui)
+		dialog.ui.setupUi(dialog)
+
+		# Set values to the data
+		dialog.refcat.setText('{}'.format(info['refcat']))
+		dialog.ninterno.setText('{}'.format(id))
+		dialog.area.setText('{}'.format(info['area']))
+		dialog.txtAdreca.setText('{}'.format(info['adreca']))
+
+		dialog.txtSector.setText('{} - {}'.format(info['codi_sector'], info['descr_sector']))
+		dialog.lblSector.setText(sectorLink('{}'.format(info['codi_sector'])))
+
+		dialog.txtClass.setText('{} - {}'.format(info['codi_classi'], info['descr_classi']))
+		dialog.lblClass.setText(classiLink('{}'.format(info['codi_classi'])))
+
+
+		codes = info['codi_zones']
+		percents = info['percent_zones']
+
+		if len(codes) >= 1:
+			dialog.txtClau_1.setText('{}'.format(codes[0]))
+			dialog.txtPer_1.setText('{}'.format(percents[0]))
+			dialog.lblOrd_1.setText('{}'.format(ordLink(codes[0])))
+
+
+		if len(codes) >= 2:
+			dialog.txtClau_2.setText('{}'.format(codes[1]))
+			dialog.txtPer_2.setText('{}'.format(percents[1]))
+			dialog.lblOrd_2.setText('{}'.format(ordLink(codes[1])))
+		else
+			dialog.txtClau_2.setHidden(True)
+			dialog.txtPer_2.setHidden(True)
+			dialog.lblOrd_2.setHidden(True)
+
+
+		if len(codes) >= 3:
+			dialog.txtClau_3.setText('{}'.format(codes[2]))
+			dialog.txtPer_3.setText('{}'.format(percents[2]))
+			dialog.lblOrd_3.setText('{}'.format(ordLink(codes[2])))
+		else
+			dialog.txtClau_3.setHidden(True)
+			dialog.txtPer_3.setHidden(True)
+			dialog.lblOrd_3.setHidden(True)
+
+
+		if len(codes) >= 4:
+			dialog.txtClau_4.setText('{}'.format(codes[3]))
+			dialog.txtPer_4.setText('{}'.format(percents[3]))
+			dialog.lblOrd_4.setText('{}'.format(ordLink(codes[3])))
+		else
+			dialog.txtClau_4.setHidden(True)
+			dialog.txtPer_4.setHidden(True)
+			dialog.lblOrd_4.setHidden(True)
+
+		# TODO add functionality to buttons
+		# btnParcelaPdf -> ubicacio
+		# btnClauPdf_1 -> zones
+
+		dialog.exec()
+
+
+
+#self.ui..setText('{}'.format(info['']))
+	def queryInfo(self, id):
+		"""Querys the information on the database."""
+		self.cursor.execute("SELECT ficha_tecnica({:s});".format(id))
+		return self.cursor.fetchall()
