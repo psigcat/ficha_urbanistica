@@ -23,21 +23,8 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
       FROM carto.qualificacions AS __quali, _parcela
       WHERE ST_Intersects(_parcela.geom, __quali.geom)
       GROUP BY __quali.codi
-    ),
-    _zones AS (
-      SELECT __.codi AS codi, __.percent AS percent
-      FROM (
-        SELECT _quali.codi, 100*area/sum_area AS percent
-        FROM _quali FULL JOIN (
-          SELECT SUM(area) AS sum_area
-          FROM _quali
-        ) AS _ ON TRUE
-      ) AS __
-      WHERE percent>=3
-      ORDER BY percent DESC, codi ASC
-      LIMIT 4
     )
-    
+  
 
   SELECT
     _parcela.refcat AS refcat,
@@ -45,8 +32,8 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
     _via.tipus_via||' '||_via.nom_via||', '||_parcela.numero AS adreca,
     _classi.codi AS codi_classi,
     _classi.descr AS descr_classi,
-    ARRAY(SELECT codi FROM _zones) AS codi_zones,
-    ARRAY(SELECT percent FROM _zones) AS percent_zones,
+    codi_zones,
+    percent_zones,
     _sector.codi AS codi_sector,
     _sector.descr AS descr_sector
 
@@ -60,23 +47,50 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
       -- Hi pot haver petits errors deguts al mapa. Utilitzem el sector amb més area
       ORDER BY ST_Area(ST_Intersection(sectors.geom, _parcela.geom)) DESC
       LIMIT 1
-    ) AS _sector ON TRUE,
+    ) AS _sector ON TRUE
 
-    _zones,
 
-    ( -- Subquery per agafar les dades de la via
-      SELECT tipus_via, nom_via
-      FROM carrerer.carrerer_eixos, _parcela
+    LEFT JOIN ( -- Subquery per agafar les dades de la via
+      SELECT
+        tipus_via,
+        nom_via
+      FROM
+        carrerer.carrerer_eixos,
+        _parcela
       WHERE id=_parcela.id_via
       LIMIT 1
-    ) AS _via,
+    ) AS _via ON TRUE
 
-    (
+
+    LEFT JOIN (
+      WITH
+        _2_ AS (
+          SELECT __.codi AS codi, __.percent AS percent
+          FROM (
+            SELECT _quali.codi, 100*area/sum_area AS percent
+            FROM _quali FULL JOIN (
+              SELECT SUM(area) AS sum_area
+              FROM _quali
+            ) AS _ ON TRUE
+          ) AS __
+          WHERE percent>=3
+          ORDER BY percent DESC, codi ASC
+          LIMIT 4
+        )
+      SELECT
+        ARRAY(SELECT codi FROM _2_) AS codi_zones,
+        ARRAY(SELECT percent FROM _2_) AS percent_zones
+      LIMIT 1
+    ) AS _zones ON TRUE
+
+
+    LEFT JOIN (
       SELECT class.codi AS codi, class.descripcio AS descr
       FROM planejament_urba.classificacio AS class, _parcela
       WHERE ST_Intersects(class.geom, _parcela.geom)
       ORDER BY ST_Area(ST_Intersection(class.geom, _parcela.geom))
-    ) AS _classi
+      LIMIT 1
+    ) AS _classi ON TRUE
   ;
 
 $$ LANGUAGE SQL;
