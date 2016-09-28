@@ -111,22 +111,32 @@ class FichaUrbanistica:
 		dialog.ui = deepcopy(self.ui)
 		dialog.ui.setupUi(dialog)
 
+		REFCAT = 0
+		AREA = 1
+		ADRECA = 2
+		CODI_CLASSI = 3
+		DESCR_CLASSI = 4
+		CODI_ZONES = 5
+		PERCENT_ZONES = 6
+		CODI_SECTOR = 7
+		DESCR_SECTOR = 8
+
 		# Set values to the data
-		dialog.refcat.setText('{}'.format(info[0]))
+		dialog.refcat.setText('{}'.format( info[REFCAT] ))
 		dialog.ninterno.setText('{}'.format(id))
-		dialog.area.setText('{}'.format(info[1]))
-		dialog.txtAdreca.setText('{}'.format(info[2]))
+		dialog.area.setText('{}'.format( info[AREA] ))
+		dialog.txtAdreca.setText('{}'.format( info[ADRECA] ))
 
 		if info[7] is not None:
-			dialog.txtSector.setText('{} - {}'.format(info[7], info[8]))
-			dialog.lblSector.setText(sectorLink('{}'.format(info[7])))
+			dialog.txtSector.setText('{} - {}'.format( info[CODI_SECTOR], info[DESCR_SECTOR] ))
+			dialog.lblSector.setText(sectorLink('{}'.format(info[CODI_SECTOR])))
 
-		dialog.txtClass.setText('{} - {}'.format(info[3], info[4]))
-		dialog.lblClass.setText(classiLink('{}'.format(info[3])))
+		dialog.txtClass.setText('{} - {}'.format( info[CODI_CLASSI], info[DESCR_CLASSI] ))
+		dialog.lblClass.setText(classiLink('{}'.format( info[CODI_CLASSI] )))
 
 
-		codes = info[5]
-		percents = info[6]
+		codes = info[CODI_ZONES]
+		percents = info[PERCENT_ZONES]
 
 		if len(codes) >= 1:
 			dialog.txtClau_1.setText('{}'.format(codes[0]))
@@ -175,3 +185,9 @@ class FichaUrbanistica:
 		"""Querys the information on the database."""
 		self.cursor.execute("SELECT * FROM data.ficha_urbanistica({});".format(id))
 		return self.cursor.fetchall()[0]
+
+	def classLink(self, id):
+		pass
+
+	def ordLink(self, code):
+		pass
