@@ -38,10 +38,18 @@ class FichaUrbanistica:
 			print u'No es carregarà el plugin.'
 			return # This return means there is no trigger set
 
+		self.ui = None
+		self.icon = None
+		self.action = None
+
 
 
 	def initGui(self):
 		"""Called when the gui must be generated."""
+
+        # Find and safe the plugin's icon
+        filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
+        self.icon = QIcon(str(filename))
 
 		# Get the ui
 		uiFile = QFile(os.path.dirname(os.path.abspath(__file__))+'/ui/form.ui')
@@ -49,14 +57,18 @@ class FichaUrbanistica:
 		self.ui = loadUi(uiFile)
 		uiFile.close();
 
-		pass
+        # Add menu and toolbar entries (basically allows to activate it)
+        self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
+        QObject.connect(self.action, SIGNAL('triggered()'), self.run)
+        self.iface.addToolBarIcon(self.action)
+        self.iface.addPluginToMenu(qu("Ficha urbanística"), self.action)
 
 
 
 	def unlaod(self):
 		"""Called when the plugin is being unloaded."""
-
-		pass
+        self.iface.removePluginMenu(qu("Ficha urbanística"), self.action)
+        self.iface.removeToolBarIcon(self.action)
 
 
 
@@ -84,6 +96,7 @@ class FichaUrbanistica:
 		# else:
 		#	while feature in features:
 		#		thread.start_new_thread(openform, (feature[ID_STR]))
+
 
 
 	def openForm(self, id):
@@ -157,8 +170,7 @@ class FichaUrbanistica:
 
 
 
-#self.ui..setText('{}'.format(info['']))
 	def queryInfo(self, id):
 		"""Querys the information on the database."""
-		self.cursor.execute("SELECT ficha_tecnica({:s});".format(id))
-		return self.cursor.fetchall()
+		self.cursor.execute("SELECT * FROM data.ficha_urbanistica({:s});".format(id))
+		return self.cursor.fetchall()[0]
