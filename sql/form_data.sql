@@ -29,7 +29,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
   SELECT
     _parcela.refcat AS refcat,
     _parcela.area AS area,
-    _via.tipus_via||' '||_via.nom_via||', '||_parcela.numero AS adreca,
+    _via.adreca AS adreca,
     _classi.codi AS codi_classi,
     _classi.descr AS descr_classi,
     codi_zones,
@@ -50,14 +50,17 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
     ) AS _sector ON TRUE
 
 
-    LEFT JOIN ( -- Subquery per agafar les dades de la via
+    LEFT JOIN (
       SELECT
-        tipus_via,
-        nom_via
+        COALESCE(tipo_via||' ', '') ||
+        COALESCE(nombre_via, '<desconegut>') ||
+        COALESCE(', '||primer_numero_policia, ', SN') ||
+        COALESCE(' '||primera_letra, '')
+        AS adreca
       FROM
-        carrerer.carrerer_eixos,
-        _parcela
-      WHERE id=_parcela.id_via
+        cadastre.cat_11, _parcela
+      WHERE
+        cat_11.parcela_catastral=_parcela.refcat
       LIMIT 1
     ) AS _via ON TRUE
 
