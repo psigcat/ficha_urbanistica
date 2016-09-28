@@ -112,20 +112,21 @@ class FichaUrbanistica:
 		dialog.ui.setupUi(dialog)
 
 		# Set values to the data
-		dialog.refcat.setText('{}'.format(info['refcat']))
+		dialog.refcat.setText('{}'.format(info[0]))
 		dialog.ninterno.setText('{}'.format(id))
-		dialog.area.setText('{}'.format(info['area']))
-		dialog.txtAdreca.setText('{}'.format(info['adreca']))
+		dialog.area.setText('{}'.format(info[1]))
+		dialog.txtAdreca.setText('{}'.format(info[2]))
 
-		dialog.txtSector.setText('{} - {}'.format(info['codi_sector'], info['descr_sector']))
-		dialog.lblSector.setText(sectorLink('{}'.format(info['codi_sector'])))
+		if info[7] is not None:
+			dialog.txtSector.setText('{} - {}'.format(info[7], info[8]))
+			dialog.lblSector.setText(sectorLink('{}'.format(info[7])))
 
-		dialog.txtClass.setText('{} - {}'.format(info['codi_classi'], info['descr_classi']))
-		dialog.lblClass.setText(classiLink('{}'.format(info['codi_classi'])))
+		dialog.txtClass.setText('{} - {}'.format(info[3], info[4]))
+		dialog.lblClass.setText(classiLink('{}'.format(info[3])))
 
 
-		codes = info['codi_zones']
-		percents = info['percent_zones']
+		codes = info[5]
+		percents = info[6]
 
 		if len(codes) >= 1:
 			dialog.txtClau_1.setText('{}'.format(codes[0]))
@@ -172,5 +173,5 @@ class FichaUrbanistica:
 
 	def queryInfo(self, id):
 		"""Querys the information on the database."""
-		self.cursor.execute("SELECT * FROM data.ficha_urbanistica({:s});".format(id))
+		self.cursor.execute("SELECT * FROM data.ficha_urbanistica({});".format(id))
 		return self.cursor.fetchall()[0]
