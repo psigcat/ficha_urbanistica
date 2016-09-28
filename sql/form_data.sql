@@ -1,57 +1,70 @@
 -- Funcio que retorna una taula amb tots els valors necesaris pel formulari.
-CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_classi text, descr_classi text, codi_zones text[], percent_zones numeric[])
+CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_quali text, descr_quali text, codi_zones text[], percent_zones numeric[])
 AS $$
 
   WITH
     _parcela AS (
-      SELECT refcat, geom, ST_Area(geom) as area
-      FROM parcela
-      WHERE ninterno = $1
+      SELECT refcat, geom, ST_Area(geom) as area, numero, via AS id_via
+      FROM carto.parcela
+      WHERE ninterno=$1
+      LIMIT 1
+    ),
+    _quali AS (
+      SELECT __quali.codi AS codi, SUM(ST_Area(__quali.geom)) AS area
+      FROM carto.qualificacions AS __quali, _parcela
+      WHERE ST_Intersects(_parcela.geom, __quali.geom)
+      GROUP BY __quali.codi
+    ),
+    _zones AS (
+      SELECT __.codi AS codi, __.percent AS percent
+      FROM (
+        SELECT _quali.codi, 100*area/sum_area AS percent
+        FROM _quali FULL JOIN (
+          SELECT SUM(area) AS sum_area
+          FROM _quali
+        ) AS _ ON TRUE
+      ) AS __
+      WHERE percent>=3
+      ORDER BY percent DESC, codi ASC
+      LIMIT 4
     )
+    
 
   SELECT
-    _parcela.refat AS refcat,
+    _parcela.refcat AS refcat,
     _parcela.area AS area,
-    (
-      -- TODO
-    ) AS adreca,
+    _via.tipus_via||' '||_via.nom_via||', '||_parcela.numero AS adreca,
+    _quali_tereny.codi AS codi_quali,
+    _quali_tereny.descr AS descr_quali,
+    ARRAY(SELECT codi FROM _zones) AS codi_zones,
+    ARRAY(SELECT percent FROM _zones) AS percent_zones,
     _sector.codi AS codi_sector,
-    _sector.descr AS descr_sector,
-    _classi.codi AS codi_classi,
-    _classi.descr AS descr_classi,
-    ARRAY(SELECT codi FROM _zones ORDER BY percent DESC, codi ASC) AS codi_zones,
-    ARRAY(SELECT percent FROM _zones ORDER BY percent DESC, codi ASC) AS percent_zones
+    _sector.descr AS descr_sector
 
   FROM
-    _parcela,
-    ( -- Subquery per aconseguir a quin sector partany el terreny
-      SELECT codi, descipcio
-      FROM sectors_urbanistics, _parcela
-      WHERE TS_Intersects(_parcela.geom, sectors_urbanistics.geom)
-      -- Hi pot haver petits errors deguts al mapa. Utilitzem el sector amb més area
-      ORDER BY TS_Area(TS_Intersection(sectors_urbanistics.geom)) DESC
-      LIMIT 1
-    ) AS _sector,
+    _parcela
 
-    ( -- Subquery per aconseguir quina calificacio té el terreny
-      SELECT codi, descipcio
-      FROM classificacio, _parcela
-      WHERE TS_Intersects(_parcela.geom, classificacio.geom)
+    LEFT JOIN ( -- Subquery per aconseguir a quin sector partany el terreny
+      SELECT codi, descripcio AS descr
+      FROM carto.sectors, _parcela
+      WHERE ST_Intersects(_parcela.geom, sectors.geom)
       -- Hi pot haver petits errors deguts al mapa. Utilitzem el sector amb més area
-      ORDER BY TS_Area(TS_Intersection(classificacio.geom)) DESC
+      ORDER BY ST_Area(ST_Intersection(sectors.geom, _parcela.geom)) DESC
       LIMIT 1
-    ) AS _classi,
+    ) AS _sector ON TRUE,
+
+    _zones,
+
+    ( -- Subquery per agafar les dades de la via
+      SELECT tipus_via, nom_via
+      FROM carrerer.carrerer_eixos, _parcela
+      WHERE id=_parcela.id_via
+      LIMIT 1
+    ) AS _via,
 
     (
-      -- Aconseguim el parcentatge de l'area i descartem totes les ares que son < 3%
-      SELECT _zones.codi, 100 * TS_Area(_zones.area) / SUN(TS_Area(_zones.area)) AS percent
-      FROM (
-        -- Troba les zones i les areas.
-        -- TODO
-      ) AS _zones
-      WHERE percent >= 3
-      GROUP BY _zones.codi
-      LIMIT 4 -- Maxim nombre que es pot mostrar
-    ) _zones;
+      SELECT 'codi' AS codi, 'descr' AS descr
+    ) AS _quali_tereny
+  ;
 
 $$ LANGUAGE SQL;
