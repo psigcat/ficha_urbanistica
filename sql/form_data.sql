@@ -1,6 +1,15 @@
 -- Funcio que retorna una taula amb tots els valors necesaris pel formulari.
-CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(refcat text, area int, adreca text, codi_sector text, descr_sector text, codi_quali text, descr_quali text, codi_zones text[], percent_zones numeric[])
-AS $$
+CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
+  refcat text,
+  area int,
+  adreca text,
+  codi_sector text,
+  descr_sector text,
+  codi_classi text,
+  descr_classi text,
+  codi_zones text[],
+  percent_zones numeric[]
+) AS $$
 
   WITH
     _parcela AS (
@@ -34,8 +43,8 @@ AS $$
     _parcela.refcat AS refcat,
     _parcela.area AS area,
     _via.tipus_via||' '||_via.nom_via||', '||_parcela.numero AS adreca,
-    _quali_tereny.codi AS codi_quali,
-    _quali_tereny.descr AS descr_quali,
+    _classi.codi AS codi_classi,
+    _classi.descr AS descr_classi,
     ARRAY(SELECT codi FROM _zones) AS codi_zones,
     ARRAY(SELECT percent FROM _zones) AS percent_zones,
     _sector.codi AS codi_sector,
@@ -63,8 +72,11 @@ AS $$
     ) AS _via,
 
     (
-      SELECT 'codi' AS codi, 'descr' AS descr
-    ) AS _quali_tereny
+      SELECT class.codi AS codi, class.descripcio AS descr
+      FROM planejament_urba.classificacio AS class, _parcela
+      WHERE ST_Intersects(class.geom, _parcela.geom)
+      ORDER BY ST_Area(ST_Intersection(class.geom, _parcela.geom))
+    ) AS _classi
   ;
 
 $$ LANGUAGE SQL;
