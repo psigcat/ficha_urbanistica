@@ -1,14 +1,14 @@
 -- Funcio que retorna una taula amb tots els valors necesaris pel formulari.
 CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
   refcat text,
-  area int,
+  area double precision,
   adreca text,
-  codi_sector text,
-  descr_sector text,
   codi_classi text,
   descr_classi text,
-  codi_zones text[],
-  percent_zones numeric[]
+  codi_zones character varying(10)[],
+  percent_zones double precision[],
+  codi_sector text,
+  descr_sector text
 ) AS $$
 
   WITH
