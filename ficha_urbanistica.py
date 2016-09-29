@@ -6,9 +6,7 @@ import os
 import psycopg2
 import db_credentials
 
-from copy import deepcopy
-
-from PyQt4.uic import loadUi
+from ui.form import Ui_dialogName
 
 DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(db_credentials.host, db_credentials.port, db_credentials.dbname, db_credentials.user, db_credentials.password)
 LAYER_NAME = ""
@@ -38,7 +36,6 @@ class FichaUrbanistica:
 			print u'No es carregarà el plugin.'
 			return # This return means there is no trigger set
 
-		self.ui = None
 		self.icon = None
 		self.action = None
 
@@ -50,12 +47,6 @@ class FichaUrbanistica:
         # Find and safe the plugin's icon
         filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
         self.icon = QIcon(str(filename))
-
-		# Get the ui
-		uiFile = QFile(os.path.dirname(os.path.abspath(__file__))+'/ui/form.ui')
-		uiFile.open(QFile.ReadOnly)
-		self.ui = loadUi(uiFile)
-		uiFile.close();
 
         # Add menu and toolbar entries (basically allows to activate it)
         self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
@@ -108,8 +99,11 @@ class FichaUrbanistica:
 		info = queryInfo(id)
 
 		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
-		dialog.ui = deepcopy(self.ui)
+		dialog.ui = Ui_dialogName()
 		dialog.ui.setupUi(dialog)
+
+		dialog.setAttribute(Qt.WA_DeleteOnClose)
+		dialog.setWindowIcon(self.icon)
 
 		REFCAT = 0
 		AREA = 1
