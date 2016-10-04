@@ -138,7 +138,9 @@ class FichaUrbanistica:
 
 		if info[7] is not None:
 			dialog.ui.txtSector.setText(u'{} - {}'.format( info[CODI_SECTOR], info[DESCR_SECTOR] ))
-			dialog.ui.lblSector.setText(sectorLink('{}'.format(info[CODI_SECTOR])))
+			dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[CODI_SECTOR])))
+		else:
+			dialog.ui.lblSector.setHidden(True)
 
 		dialog.ui.txtClass.setText(u'{} - {}'.format( info[CODI_CLASSI], info[DESCR_CLASSI] ))
 		dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[CODI_CLASSI] )))
@@ -195,11 +197,15 @@ class FichaUrbanistica:
 		self.cursor.execute(u'SELECT * FROM ficha_urbanistica(%s);', [id])
 		return self.cursor.fetchall()[0]
 
+
+	def sectorLink(self, id):
+		return 'link' # TODO
+
 	def classiLink(self, id):
-		return '<link>' # TODO
+		return '<a>link</a>' # TODO
 
 	def ordLink(self, code):
-		return '<link>' # TODO
+		return '<a>link</a>' # TODO
 
 
 
