@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Main file of the project ficha_urbanistica. This contains the main class as well as all the importan work."""
 
 # TODO add imports
@@ -5,10 +6,19 @@
 import os
 import psycopg2
 import db_credentials
+from PyQt4 import QtCore
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from qgis.core import *
 
 from ui.form import Ui_dialogName
 
-DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(db_credentials.host, db_credentials.port, db_credentials.dbname, db_credentials.user, db_credentials.password)
+DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(
+	db_credentials.host,
+	db_credentials.port,
+	db_credentials.dbname,
+	db_credentials.user,
+	db_credentials.password)
 LAYER_NAME = ""
 ID_STR = "ninterno"
 REPORTS_FOLDER = os.path.dirname(os.path.abspath(__file__)) + "/reports/"
@@ -18,19 +28,21 @@ class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
 
 
-	def _init_(self, iface):
+	def __init__(self, iface):
 		"""Contructor"""
 
 		# Saving iface to be reachable from the other functions
 		self.iface = iface
 
-		self.plugin_dir = 
+		self.plugin_dir = os.path.dirname(__file__)
+		self.pluginName = os.path.basename(self.plugin_dir)
 
 
 		# Connecting to the database
 		try:
-			self.conn = psycopg2.connect(DB_CREDENTIALS) # Cedentials in the credentials file. The credentials should not be uploaded to the public repository
-			self.cursor = conn.cursor()
+			# Cedentials in the credentials file. The credentials should not be uploaded to the public repository
+			self.conn = psycopg2.connect(DB_CREDENTIALS)
+			self.cursor = self.conn.cursor()
 		except psycopg2.DatabaseError as e:
 			print u'Error al connectar amb la base de dades.'
 			print '{:s}'.format(e)
@@ -58,7 +70,7 @@ class FichaUrbanistica:
 
 
 
-	def unlaod(self):
+	def unload(self):
 		"""Called when the plugin is being unloaded."""
 		self.iface.removePluginMenu(qu("Ficha urbanística"), self.action)
 		self.iface.removeToolBarIcon(self.action)
@@ -72,14 +84,15 @@ class FichaUrbanistica:
 		layer = self.iface.activeLayer()
 
 		# Make sure it is the layer we think it is.
-		if layer.name() != LAYER_NAME:
-			return
+		#if layer.name() != LAYER_NAME:
+		#	return
 
 
 		# single feature
+		features = layer.selectedFeatures()
 		if len(features) != 1:
 			return
-		openForm(features[0][ID_STR])
+		self.openForm(features[0][ID_STR])
 
 		# Multiple feature support
 		# if len(features) < 1:
@@ -98,7 +111,7 @@ class FichaUrbanistica:
 		# This function supports multiple instances
 
 		# Query the necesary information
-		info = queryInfo(id)
+		info = self.queryInfo(id)
 
 		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
 		dialog.ui = Ui_dialogName()
@@ -118,72 +131,134 @@ class FichaUrbanistica:
 		DESCR_SECTOR = 8
 
 		# Set values to the data
-		dialog.refcat.setText('{}'.format( info[REFCAT] ))
-		dialog.ninterno.setText('{}'.format(id))
-		dialog.area.setText('{}'.format( info[AREA] ))
-		dialog.txtAdreca.setText('{}'.format( info[ADRECA] ))
+		dialog.ui.refcat.setText(u'{}'.format( info[REFCAT] ))
+		dialog.ui.ninterno.setText(u'{}'.format(id))
+		dialog.ui.area.setText(u'{}'.format( info[AREA] ))
+		dialog.ui.txtAdreca.setText(u'{}'.format( info[ADRECA] ))
 
 		if info[7] is not None:
-			dialog.txtSector.setText('{} - {}'.format( info[CODI_SECTOR], info[DESCR_SECTOR] ))
-			dialog.lblSector.setText(sectorLink('{}'.format(info[CODI_SECTOR])))
+			dialog.ui.txtSector.setText(u'{} - {}'.format( info[CODI_SECTOR], info[DESCR_SECTOR] ))
+			dialog.ui.lblSector.setText(sectorLink('{}'.format(info[CODI_SECTOR])))
 
-		dialog.txtClass.setText('{} - {}'.format( info[CODI_CLASSI], info[DESCR_CLASSI] ))
-		dialog.lblClass.setText(classiLink('{}'.format( info[CODI_CLASSI] )))
+		dialog.ui.txtClass.setText(u'{} - {}'.format( info[CODI_CLASSI], info[DESCR_CLASSI] ))
+		dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[CODI_CLASSI] )))
 
 
 		codes = info[CODI_ZONES]
 		percents = info[PERCENT_ZONES]
 
 		if len(codes) >= 1:
-			dialog.txtClau_1.setText('{}'.format(codes[0]))
-			dialog.txtPer_1.setText('{}'.format(percents[0]))
-			dialog.lblOrd_1.setText('{}'.format(ordLink(codes[0])))
+			dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
+			dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
+			dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(codes[0])))
 
 
 		if len(codes) >= 2:
-			dialog.txtClau_2.setText('{}'.format(codes[1]))
-			dialog.txtPer_2.setText('{}'.format(percents[1]))
-			dialog.lblOrd_2.setText('{}'.format(ordLink(codes[1])))
+			dialog.ui.txtClau_2.setText(u'{}'.format(str(codes[1])))
+			dialog.ui.txtPer_2.setText(u'{:02.2f}'.format(percents[1]))
+			dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(codes[1])))
 		else:
-			dialog.txtClau_2.setHidden(True)
-			dialog.txtPer_2.setHidden(True)
-			dialog.lblOrd_2.setHidden(True)
+			dialog.ui.txtClau_2.setHidden(True)
+			dialog.ui.txtPer_2.setHidden(True)
+			dialog.ui.lblOrd_2.setHidden(True)
 
 
 		if len(codes) >= 3:
-			dialog.txtClau_3.setText('{}'.format(codes[2]))
-			dialog.txtPer_3.setText('{}'.format(percents[2]))
-			dialog.lblOrd_3.setText('{}'.format(ordLink(codes[2])))
+			dialog.ui.txtClau_3.setText(u'{}'.format(str(codes[2])))
+			dialog.ui.txtPer_3.setText(u'{:02.2f}'.format(percents[2]))
+			dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(codes[2])))
 		else:
-			dialog.txtClau_3.setHidden(True)
-			dialog.txtPer_3.setHidden(True)
-			dialog.lblOrd_3.setHidden(True)
+			dialog.ui.txtClau_3.setHidden(True)
+			dialog.ui.txtPer_3.setHidden(True)
+			dialog.ui.lblOrd_3.setHidden(True)
 
 
 		if len(codes) >= 4:
-			dialog.txtClau_4.setText('{}'.format(codes[3]))
-			dialog.txtPer_4.setText('{}'.format(percents[3]))
-			dialog.lblOrd_4.setText('{}'.format(ordLink(codes[3])))
+			dialog.ui.txtClau_4.setText(u'{}'.format(str(codes[3])))
+			dialog.ui.txtPer_4.setText(u'{:02.2f}'.format(percents[3]))
+			dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(codes[3])))
 		else:
-			dialog.txtClau_4.setHidden(True)
-			dialog.txtPer_4.setHidden(True)
-			dialog.lblOrd_4.setHidden(True)
+			dialog.ui.txtClau_4.setHidden(True)
+			dialog.ui.txtPer_4.setHidden(True)
+			dialog.ui.lblOrd_4.setHidden(True)
 
 		# TODO add functionality to buttons
 		# btnParcelaPdf -> ubicacio
 		# btnClauPdf_1 -> zones
 
-		dialog._exec()
+		dialog.exec_()
 
 
 
 	def queryInfo(self, id):
 		"""Querys the information on the database."""
-		self.cursor.execute("SELECT * FROM data.ficha_urbanistica({});".format(id))
+		self.cursor.execute(u'SELECT * FROM ficha_urbanistica(%s);', [id])
 		return self.cursor.fetchall()[0]
 
-	def classLink(self, id):
-		pass
+	def classiLink(self, id):
+		return '<link>' # TODO
 
 	def ordLink(self, code):
-		pass
+		return '<link>' # TODO
+
+
+
+
+
+
+# Utilities
+
+# Unicode QString generator function
+try:
+    qu = QtCore.QString.fromUtf8
+except AttributeError:
+    def qu(s):
+        return s
+
+# Qt translate function
+try:
+    def _translate(context, text, disambig):
+        return QApplication.translate(context, text, disambig, QApplication.UnicodeUTF8)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QApplication.translate(context, text, disambig)
+def tr(text):
+    return _translate("export_gml_catastro_espanya", text, None)
+
+
+# Returns a QVector of QgsPoints which are the vertex
+def getVertex(geometry):
+    current = geometryToVector(geometry)
+    while len(current) > 0 and type(current[0]) is not QgsPoint:
+        temp = []
+        for sub in current:
+            for e in sub:
+                temp.append(e)
+        current = temp
+    return current
+
+# Converts the geometry into a QVector of its type
+def geometryToVector(geometry):
+    if geometry.wkbType() == QGis.WKBPolygon:
+        return geometry.asPolygon()
+
+    elif geometry.wkbType() == QGis.QPolygonF:
+        return geometry.asQPolygonF().toPolygon()
+
+    elif geometry.wkbType() == QGis.WKBMultiPolygon:
+        return geometry.asMultiPolygon()
+
+    elif geometry.wkbType() == QGis.WKBMultiPoint:
+        return geometry.asMultiPoint()
+
+    elif geometry.wkbType() == QGis.WKBPoint:
+        return geometry.asPoint()
+
+    elif geometry.wkbType() == QGis.WKBLineString:
+        return geometry.asPolyline()
+
+    elif geometry.wkbType() == QGis.WKBMultiLineString:
+        return geometry.asMultiPolyline()
+
+    else:
+        return []
