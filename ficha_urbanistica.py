@@ -24,12 +24,14 @@ class FichaUrbanistica:
 		# Saving iface to be reachable from the other functions
 		self.iface = iface
 
+		self.plugin_dir = 
+
 
 		# Connecting to the database
 		try:
 			self.conn = psycopg2.connect(DB_CREDENTIALS) # Cedentials in the credentials file. The credentials should not be uploaded to the public repository
 			self.cursor = conn.cursor()
-		except psycopg2.DatabaseError e:
+		except psycopg2.DatabaseError as e:
 			print u'Error al connectar amb la base de dades.'
 			print '{:s}'.format(e)
 			print ''
@@ -44,22 +46,22 @@ class FichaUrbanistica:
 	def initGui(self):
 		"""Called when the gui must be generated."""
 
-        # Find and safe the plugin's icon
-        filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
-        self.icon = QIcon(str(filename))
+		# Find and safe the plugin's icon
+		filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
+		self.icon = QIcon(str(filename))
 
-        # Add menu and toolbar entries (basically allows to activate it)
-        self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
-        QObject.connect(self.action, SIGNAL('triggered()'), self.run)
-        self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(qu("Ficha urbanística"), self.action)
+		# Add menu and toolbar entries (basically allows to activate it)
+		self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
+		QObject.connect(self.action, SIGNAL('triggered()'), self.run)
+		self.iface.addToolBarIcon(self.action)
+		self.iface.addPluginToMenu(qu("Ficha urbanística"), self.action)
 
 
 
 	def unlaod(self):
 		"""Called when the plugin is being unloaded."""
-        self.iface.removePluginMenu(qu("Ficha urbanística"), self.action)
-        self.iface.removeToolBarIcon(self.action)
+		self.iface.removePluginMenu(qu("Ficha urbanística"), self.action)
+		self.iface.removeToolBarIcon(self.action)
 
 
 
@@ -70,13 +72,13 @@ class FichaUrbanistica:
 		layer = self.iface.activeLayer()
 
 		# Make sure it is the layer we think it is.
-		if (layer.name() != LAYER_NAME)
+		if layer.name() != LAYER_NAME:
 			return
 
 
 		# single feature
 		if len(features) != 1:
-            return
+			return
 		openForm(features[0][ID_STR])
 
 		# Multiple feature support
@@ -142,7 +144,7 @@ class FichaUrbanistica:
 			dialog.txtClau_2.setText('{}'.format(codes[1]))
 			dialog.txtPer_2.setText('{}'.format(percents[1]))
 			dialog.lblOrd_2.setText('{}'.format(ordLink(codes[1])))
-		else
+		else:
 			dialog.txtClau_2.setHidden(True)
 			dialog.txtPer_2.setHidden(True)
 			dialog.lblOrd_2.setHidden(True)
@@ -152,7 +154,7 @@ class FichaUrbanistica:
 			dialog.txtClau_3.setText('{}'.format(codes[2]))
 			dialog.txtPer_3.setText('{}'.format(percents[2]))
 			dialog.lblOrd_3.setText('{}'.format(ordLink(codes[2])))
-		else
+		else:
 			dialog.txtClau_3.setHidden(True)
 			dialog.txtPer_3.setHidden(True)
 			dialog.lblOrd_3.setHidden(True)
@@ -162,7 +164,7 @@ class FichaUrbanistica:
 			dialog.txtClau_4.setText('{}'.format(codes[3]))
 			dialog.txtPer_4.setText('{}'.format(percents[3]))
 			dialog.lblOrd_4.setText('{}'.format(ordLink(codes[3])))
-		else
+		else:
 			dialog.txtClau_4.setHidden(True)
 			dialog.txtPer_4.setHidden(True)
 			dialog.lblOrd_4.setHidden(True)
@@ -171,7 +173,7 @@ class FichaUrbanistica:
 		# btnParcelaPdf -> ubicacio
 		# btnClauPdf_1 -> zones
 
-		dialog.exec()
+		dialog._exec()
 
 
 
