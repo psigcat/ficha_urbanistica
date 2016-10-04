@@ -116,6 +116,7 @@ class FichaUrbanistica:
 		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
 		dialog.ui = Ui_dialogName()
 		dialog.ui.setupUi(dialog)
+		dialog.setFixedSize(dialog.size())
 
 		dialog.setAttribute(Qt.WA_DeleteOnClose)
 		dialog.setWindowIcon(self.icon)
