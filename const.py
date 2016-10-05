@@ -26,3 +26,8 @@ class Const:
 		db_credentials.dbname,
 		db_credentials.user,
 		db_credentials.password)
+
+	# Info query
+	QUERY = 'SELECT * FROM ficha_urbanistica(%s);'
+
+	
