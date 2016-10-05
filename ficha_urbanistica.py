@@ -187,19 +187,16 @@ class FichaUrbanistica:
 
 
 	def sectorLink(self, id):
-		link = '<a href="file:///{:s}">Veure normativa</a>'
 		filename = '{:s}.html'.format(id)
-		return link.format(os.path.join(self.sector_folder, filename))
+		return Const.LINK_NORMATIVA.format(os.path.join(self.sector_folder, filename))
 
 	def classiLink(self, id):
-		link = '<a href="file:///{:s}">Veure normativa</a>'
 		filename = '{:s}.html'.format(id)
-		return link.format(os.path.join(self.classi_folder, filename))
+		return Const.LINK_NORMATIVA.format(os.path.join(self.classi_folder, filename))
 
 	def ordLink(self, code):
-		link = '<a href="file:///{:s}">Veure normativa</a>'
 		filename = '{:s}.html'.format(code)
-		return link.format(os.path.join(self.ord_folder, filename))
+		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
 
 
 

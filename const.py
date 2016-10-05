@@ -8,6 +8,9 @@ class Const:
 	# ID feature name
 	ID_STR = config.ID_STR
 
+	# Link label value
+	LINK_NORMATIVA = '<a href="file:///{:s}">Veure normativa</a>'
+
 	# Query result columns 
 	REFCAT = 0
 	AREA = 1
@@ -30,4 +33,3 @@ class Const:
 	# Info query
 	QUERY = 'SELECT * FROM ficha_urbanistica(%s);'
 
-	
