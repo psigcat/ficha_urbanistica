@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'form.ui'
 #
-# Created: Thu Sep 29 14:40:08 2016
+# Created: Wed Oct 05 15:47:29 2016
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,7 +28,7 @@ class Ui_dialogName(object):
         dialogName.setObjectName(_fromUtf8("dialogName"))
         dialogName.setWindowModality(QtCore.Qt.WindowModal)
         dialogName.resize(464, 640)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(dialogName.sizePolicy().hasHeightForWidth())
@@ -149,10 +149,6 @@ class Ui_dialogName(object):
         self.area.setEnabled(False)
         self.area.setGeometry(QtCore.QRect(115, 50, 81, 20))
         self.area.setObjectName(_fromUtf8("area"))
-        self.ninterno = QtGui.QLineEdit(self.gbUbicacio)
-        self.ninterno.setEnabled(False)
-        self.ninterno.setGeometry(QtCore.QRect(360, 50, 51, 20))
-        self.ninterno.setObjectName(_fromUtf8("ninterno"))
         self.label_8 = QtGui.QLabel(self.gbUbicacio)
         self.label_8.setGeometry(QtCore.QRect(210, 50, 31, 21))
         self.label_8.setObjectName(_fromUtf8("label_8"))

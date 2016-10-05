@@ -41,10 +41,10 @@ class FichaUrbanistica:
 		self.ord_folder = os.path.join(docs, '')
 
 		# Save, make and empty the folders for the resulting PDF.
-		reports = os.path.join(self.plugin_dir, 'reports')
-		self.ubicacio_folder = os.path.join(reports, 'ubicacio')
-		self.permisos_folder = os.path.join(reports, 'permisos')
-		createFolder(reports)
+		reports_path = os.path.join(self.plugin_dir, 'reports')
+		self.ubicacio_folder = os.path.join(reports_path, 'ubicacio')
+		self.permisos_folder = os.path.join(reports_path, 'permisos')
+		createFolder(reports_path)
 		createFolder(self.ubicacio_folder)
 		emptyFolder(self.ubicacio_folder)
 		createFolder(self.permisos_folder)
@@ -131,9 +131,9 @@ class FichaUrbanistica:
 		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
 		dialog.ui = Ui_dialogName()
 		dialog.ui.setupUi(dialog)
-		dialog.setFixedSize(dialog.size())
 		dialog.setAttribute(Qt.WA_DeleteOnClose)
 		dialog.setWindowIcon(self.icon)
+		dialog.setFixedSize(dialog.size())
 
 		# Constants that define the row of the result mapped on it meaning
 		REFCAT = 0
@@ -148,7 +148,6 @@ class FichaUrbanistica:
 
 		# Show data
 		dialog.ui.refcat.setText(u'{}'.format( info[REFCAT] ))
-		dialog.ui.ninterno.setText(u'{}'.format(id))
 		dialog.ui.area.setText(u'{}'.format( info[AREA] ))
 		dialog.ui.txtAdreca.setText(u'{}'.format( info[ADRECA] ))
 
@@ -217,13 +216,19 @@ class FichaUrbanistica:
 
 
 	def sectorLink(self, id):
-		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.sector_folder, id)
+		link = '<a href="file:///{:s}">Veure normativa</a>'
+		filename = '{:s}.html'.format(id)
+		return link.format(os.path.join(self.sector_folder, filename))
 
 	def classiLink(self, id):
-		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.classi_folder, id)
+		link = '<a href="file:///{:s}">Veure normativa</a>'
+		filename = '{:s}.html'.format(id)
+		return link.format(os.path.join(self.classi_folder, filename))
 
 	def ordLink(self, code):
-		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.ord_folder, id)
+		link = '<a href="file:///{:s}">Veure normativa</a>'
+		filename = '{:s}.html'.format(code)
+		return link.format(os.path.join(self.ord_folder, filename))
 
 
 
@@ -252,10 +257,10 @@ def tr(text):
 
 def createFolder(folder):
 	"""Makes a folder unless it does already exist."""
-	if not os.folder.exists(folder):
+	if not os.path.exists(folder):
 		os.makedirs(folder)
 
 def emptyFolder(folder):
 	"""Removes all the files and subfolders in a folder."""
-	for f in os.listdir(forlder):
+	for f in os.listdir(folder):
 		os.remove(f)
