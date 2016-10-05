@@ -170,9 +170,18 @@ class FichaUrbanistica:
 			dialog.ui.txtPer_4.setHidden(True)
 			dialog.ui.lblOrd_4.setHidden(True)
 
-		# TODO add functionality to buttons
-		# btnParcelaPdf -> ubicacio
-		# btnClauPdf_1 -> zones
+
+
+		# PDF generation functions
+		def makeShowUbicacioPdf(): # TODO
+			pass
+
+		def makeShowZonesPdf(): # TODO
+			pass
+
+		# Connect the click signal to the functions
+		QObject.connect(dialog.ui.btnParcelaPdf, SIGNAL("clicked()"), makeShowUbicacioPdf)
+		QObject.connect(dialog.ui.btnClauPdf_1, SIGNAL("clicked()"), makeShowZonesPdf)
 
 		# SHow the dialog (execute it)
 		dialog.exec_()
@@ -197,6 +206,10 @@ class FichaUrbanistica:
 	def ordLink(self, code):
 		filename = '{:s}.html'.format(code)
 		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
+
+
+	def webDialog(self, url): # TODO
+		pass
 
 
 
