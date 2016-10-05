@@ -19,7 +19,6 @@ DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(
 	db_credentials.password)
 LAYER_NAME = ""
 ID_STR = "ninterno"
-REPORTS_FOLDER = os.path.dirname(os.path.abspath(__file__)) + "/reports/"
 
 
 class FichaUrbanistica:
@@ -34,6 +33,23 @@ class FichaUrbanistica:
 
 		self.plugin_dir = os.path.dirname(__file__)
 		self.pluginName = os.path.basename(self.plugin_dir)
+
+		# Save and make, if they don't exist, the docs folders.
+		docs = os.path.join(self.plugin_dir, 'docs')
+		self.sector_folder = os.path.join(docs, '')
+		self.classi_folder = os.path.join(docs, '')
+		self.ord_folder = os.path.join(docs, '')
+
+		# Save, make and empty the folders for the resulting PDF.
+		reports = os.path.join(self.plugin_dir, 'reports')
+		self.ubicacio_folder = os.path.join(reports, 'ubicacio')
+		self.permisos_folder = os.path.join(reports, 'permisos')
+		createFolder(reports)
+		createFolder(self.ubicacio_folder)
+		emptyFolder(self.ubicacio_folder)
+		createFolder(self.permisos_folder)
+		emptyFolder(self.permisos_folder)
+
 
 
 		# Connecting to the database
@@ -195,18 +211,19 @@ class FichaUrbanistica:
 
 	def queryInfo(self, id):
 		"""Querys the information on the database."""
+		#self.cursor.fetchall(); # ignore any residual information (should never do anything)
 		self.cursor.execute(u'SELECT * FROM ficha_urbanistica(%s);', [id])
-		return self.cursor.fetchall()[0]
+		return self.cursor.fetchone()
 
 
 	def sectorLink(self, id):
-		return '<a href="about:blank">link</a>' # TODO
+		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.sector_folder, id)
 
 	def classiLink(self, id):
-		return '<a href="about:blank">link</a>' # TODO
+		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.classi_folder, id)
 
 	def ordLink(self, code):
-		return '<a href="about:blank">link</a>' # TODO
+		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.ord_folder, id)
 
 
 
@@ -230,4 +247,15 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QApplication.translate(context, text, disambig)
 def tr(text):
-    return _translate("export_gml_catastro_espanya", text, None)
+    return _translate("ficha_urbanistica", text, None)
+
+
+def createFolder(folder):
+	"""Makes a folder unless it does already exist."""
+	if not os.folder.exists(folder):
+		os.makedirs(folder)
+
+def emptyFolder(folder):
+	"""Removes all the files and subfolders in a folder."""
+	for f in os.listdir(forlder):
+		os.remove(f)
