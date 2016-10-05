@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """File that has all constants (including the configuration)"""
 
-import config.db_credentials
-import config.config
+import config
+from config import configuration
+from config import db_credentials
 
 class Const:
 	# ID feature name
-	ID_STR = config.ID_STR
+	ID_STR = configuration.ID_STR
 
 	# Link label value
 	LINK_NORMATIVA = '<a href="file:///{:s}">Veure normativa</a>'

@@ -10,6 +10,8 @@ from qgis.core import *
 
 from const import Const
 
+from ui.form import Ui_dialogName
+
 
 class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
@@ -51,7 +53,7 @@ class FichaUrbanistica:
 			print u'Error al connectar amb la base de dades.'
 			print '{:s}'.format(e)
 			print ''
-			print u'No es carregarà el plugin.'
+			print u'No es carregara el plugin.'
 			return # This return means there is no trigger set
 
 		self.icon = None
@@ -118,7 +120,6 @@ class FichaUrbanistica:
 
 		# Show data
 		dialog.ui.refcat.setText(u'{}'.format( info[Const.REFCAT] ))
-		dialog.ui.ninterno.setText(u'{}'.format(id))
 		dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
 		dialog.ui.txtAdreca.setText(u'{}'.format( info[Const.ADRECA] ))
 
@@ -139,12 +140,14 @@ class FichaUrbanistica:
 			dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
 			dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
 			dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(codes[0])))
+			dialog.ui.lblOrd_1.linkActivated.connect(self.webDialog)
 
 
 		if len(codes) >= 2:
 			dialog.ui.txtClau_2.setText(u'{}'.format(str(codes[1])))
 			dialog.ui.txtPer_2.setText(u'{:02.2f}'.format(percents[1]))
 			dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(codes[1])))
+			dialog.ui.lblOrd_2.linkActivated.connect(self.webDialog)
 		else:
 			dialog.ui.txtClau_2.setHidden(True)
 			dialog.ui.txtPer_2.setHidden(True)
@@ -155,6 +158,7 @@ class FichaUrbanistica:
 			dialog.ui.txtClau_3.setText(u'{}'.format(str(codes[2])))
 			dialog.ui.txtPer_3.setText(u'{:02.2f}'.format(percents[2]))
 			dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(codes[2])))
+			dialog.ui.lblOrd_3.linkActivated.connect(self.webDialog)
 		else:
 			dialog.ui.txtClau_3.setHidden(True)
 			dialog.ui.txtPer_3.setHidden(True)
@@ -165,6 +169,7 @@ class FichaUrbanistica:
 			dialog.ui.txtClau_4.setText(u'{}'.format(str(codes[3])))
 			dialog.ui.txtPer_4.setText(u'{:02.2f}'.format(percents[3]))
 			dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(codes[3])))
+			dialog.ui.lblOrd_4.linkActivated.connect(self.webDialog)
 		else:
 			dialog.ui.txtClau_4.setHidden(True)
 			dialog.ui.txtPer_4.setHidden(True)
@@ -174,14 +179,17 @@ class FichaUrbanistica:
 
 		# PDF generation functions
 		def makeShowUbicacioPdf(): # TODO
+			print 'ubicacio'
 			pass
 
 		def makeShowZonesPdf(): # TODO
+			print 'zones'
 			pass
 
 		# Connect the click signal to the functions
-		QObject.connect(dialog.ui.btnParcelaPdf, SIGNAL("clicked()"), makeShowUbicacioPdf)
-		QObject.connect(dialog.ui.btnClauPdf_1, SIGNAL("clicked()"), makeShowZonesPdf)
+		dialog.ui.lblClass.linkActivated.connect(self.webDialog)
+		dialog.ui.btnParcelaPdf.clicked.connect(makeShowUbicacioPdf)
+		dialog.ui.btnClauPdf_1.clicked.connect(makeShowZonesPdf)
 
 		# SHow the dialog (execute it)
 		dialog.exec_()
@@ -209,6 +217,7 @@ class FichaUrbanistica:
 
 
 	def webDialog(self, url): # TODO
+		print "Trying to open {}".format(url)
 		pass
 
 
