@@ -3,7 +3,6 @@
 
 import os
 import psycopg2
-import db_credentials
 from PyQt4 import QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -11,14 +10,7 @@ from qgis.core import *
 
 from ui.form import Ui_dialogName
 
-DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(
-	db_credentials.host,
-	db_credentials.port,
-	db_credentials.dbname,
-	db_credentials.user,
-	db_credentials.password)
-LAYER_NAME = ""
-ID_STR = "ninterno"
+from const import Const
 
 
 class FichaUrbanistica:
@@ -41,10 +33,10 @@ class FichaUrbanistica:
 		self.ord_folder = os.path.join(docs, '')
 
 		# Save, make and empty the folders for the resulting PDF.
-		reports_path = os.path.join(self.plugin_dir, 'reports')
-		self.ubicacio_folder = os.path.join(reports_path, 'ubicacio')
-		self.permisos_folder = os.path.join(reports_path, 'permisos')
-		createFolder(reports_path)
+		reports = os.path.join(self.plugin_dir, 'reports')
+		self.ubicacio_folder = os.path.join(reports, 'ubicacio')
+		self.permisos_folder = os.path.join(reports, 'permisos')
+		createFolder(reports)
 		createFolder(self.ubicacio_folder)
 		emptyFolder(self.ubicacio_folder)
 		createFolder(self.permisos_folder)
@@ -55,7 +47,7 @@ class FichaUrbanistica:
 		# Connecting to the database
 		try:
 			# Cedentials in the credentials file. The credentials should not be uploaded to the public repository
-			self.conn = psycopg2.connect(DB_CREDENTIALS)
+			self.conn = psycopg2.connect(Const.DB_CREDENTIALS)
 			self.cursor = self.conn.cursor()
 		except psycopg2.DatabaseError as e:
 			print u'Error al connectar amb la base de dades.'
@@ -97,25 +89,15 @@ class FichaUrbanistica:
 		# Get the active layer (where the selected form is).
 		layer = self.iface.activeLayer()
 
-		# Make sure it is the layer we think it is.
-		#if layer.name() != LAYER_NAME:
-		#	return
-
-
 		# single feature
 		features = layer.selectedFeatures()
 		if len(features) != 1:
 			return
-		self.openForm(features[0][ID_STR])
 
-		# Multiple feature support
-		# if len(features) < 1:
-		#	return
-		# elif len(features) == 1:
-		#	openForm(features[0][ID_STR])
-		# else:
-		#	while feature in features:
-		#		thread.start_new_thread(openform, (feature[ID_STR]))
+		feature = features[0]
+		id_index = feature.fieldNameIndex(Const.ID_STR)
+		if id_index >= 0:
+			self.openForm(feature[id_index])
 
 
 
@@ -131,38 +113,28 @@ class FichaUrbanistica:
 		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
 		dialog.ui = Ui_dialogName()
 		dialog.ui.setupUi(dialog)
+		dialog.setFixedSize(dialog.size())
 		dialog.setAttribute(Qt.WA_DeleteOnClose)
 		dialog.setWindowIcon(self.icon)
-		dialog.setFixedSize(dialog.size())
-
-		# Constants that define the row of the result mapped on it meaning
-		REFCAT = 0
-		AREA = 1
-		ADRECA = 2
-		CODI_CLASSI = 3
-		DESCR_CLASSI = 4
-		CODI_ZONES = 5
-		PERCENT_ZONES = 6
-		CODI_SECTOR = 7
-		DESCR_SECTOR = 8
 
 		# Show data
-		dialog.ui.refcat.setText(u'{}'.format( info[REFCAT] ))
-		dialog.ui.area.setText(u'{}'.format( info[AREA] ))
-		dialog.ui.txtAdreca.setText(u'{}'.format( info[ADRECA] ))
+		dialog.ui.refcat.setText(u'{}'.format( info[Const.REFCAT] ))
+		dialog.ui.ninterno.setText(u'{}'.format(id))
+		dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
+		dialog.ui.txtAdreca.setText(u'{}'.format( info[Const.ADRECA] ))
 
 		if info[7] is not None: # It may not be part of any sector
-			dialog.ui.txtSector.setText(u'{} - {}'.format( info[CODI_SECTOR], info[DESCR_SECTOR] ))
-			dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[CODI_SECTOR])))
+			dialog.ui.txtSector.setText(u'{} - {}'.format( info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR] ))
+			dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[Const.CODI_SECTOR])))
 		else:
 			dialog.ui.lblSector.setHidden(True)
 
-		dialog.ui.txtClass.setText(u'{} - {}'.format( info[CODI_CLASSI], info[DESCR_CLASSI] ))
-		dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[CODI_CLASSI] )))
+		dialog.ui.txtClass.setText(u'{} - {}'.format( info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI] ))
+		dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[Const.CODI_CLASSI] )))
 
 
-		codes = info[CODI_ZONES]
-		percents = info[PERCENT_ZONES]
+		codes = info[Const.CODI_ZONES]
+		percents = info[Const.PERCENT_ZONES]
 
 		if len(codes) >= 1:
 			dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
@@ -216,19 +188,13 @@ class FichaUrbanistica:
 
 
 	def sectorLink(self, id):
-		link = '<a href="file:///{:s}">Veure normativa</a>'
-		filename = '{:s}.html'.format(id)
-		return link.format(os.path.join(self.sector_folder, filename))
+		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.sector_folder, id)
 
 	def classiLink(self, id):
-		link = '<a href="file:///{:s}">Veure normativa</a>'
-		filename = '{:s}.html'.format(id)
-		return link.format(os.path.join(self.classi_folder, filename))
+		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.classi_folder, id)
 
 	def ordLink(self, code):
-		link = '<a href="file:///{:s}">Veure normativa</a>'
-		filename = '{:s}.html'.format(code)
-		return link.format(os.path.join(self.ord_folder, filename))
+		return '<a href="file:///{:s}/{:s}.html">Veure Normativa classificaci&oacute;</a>'.format(self.ord_folder, id)
 
 
 
@@ -257,10 +223,10 @@ def tr(text):
 
 def createFolder(folder):
 	"""Makes a folder unless it does already exist."""
-	if not os.path.exists(folder):
+	if not os.folder.exists(folder):
 		os.makedirs(folder)
 
 def emptyFolder(folder):
 	"""Removes all the files and subfolders in a folder."""
-	for f in os.listdir(folder):
+	for f in os.listdir(forlder):
 		os.remove(f)
