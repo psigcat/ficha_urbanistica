@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Main file of the project ficha_urbanistica. This contains the main class as well as all the importan work."""
 
-# TODO add imports
-
 import os
 import psycopg2
 import db_credentials
@@ -113,14 +111,15 @@ class FichaUrbanistica:
 		# Query the necesary information
 		info = self.queryInfo(id)
 
+		# Make dialog and set its atributes
 		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
 		dialog.ui = Ui_dialogName()
 		dialog.ui.setupUi(dialog)
 		dialog.setFixedSize(dialog.size())
-
 		dialog.setAttribute(Qt.WA_DeleteOnClose)
 		dialog.setWindowIcon(self.icon)
 
+		# Constants that define the row of the result mapped on it meaning
 		REFCAT = 0
 		AREA = 1
 		ADRECA = 2
@@ -131,13 +130,13 @@ class FichaUrbanistica:
 		CODI_SECTOR = 7
 		DESCR_SECTOR = 8
 
-		# Set values to the data
+		# Show data
 		dialog.ui.refcat.setText(u'{}'.format( info[REFCAT] ))
 		dialog.ui.ninterno.setText(u'{}'.format(id))
 		dialog.ui.area.setText(u'{}'.format( info[AREA] ))
 		dialog.ui.txtAdreca.setText(u'{}'.format( info[ADRECA] ))
 
-		if info[7] is not None:
+		if info[7] is not None: # It may not be part of any sector
 			dialog.ui.txtSector.setText(u'{} - {}'.format( info[CODI_SECTOR], info[DESCR_SECTOR] ))
 			dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[CODI_SECTOR])))
 		else:
@@ -189,6 +188,7 @@ class FichaUrbanistica:
 		# btnParcelaPdf -> ubicacio
 		# btnClauPdf_1 -> zones
 
+		# SHow the dialog (execute it)
 		dialog.exec_()
 
 
@@ -200,13 +200,13 @@ class FichaUrbanistica:
 
 
 	def sectorLink(self, id):
-		return 'link' # TODO
+		return '<a href="about:blank">link</a>' # TODO
 
 	def classiLink(self, id):
-		return '<a>link</a>' # TODO
+		return '<a href="about:blank">link</a>' # TODO
 
 	def ordLink(self, code):
-		return '<a>link</a>' # TODO
+		return '<a href="about:blank">link</a>' # TODO
 
 
 
