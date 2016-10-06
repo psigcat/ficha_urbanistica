@@ -10,7 +10,8 @@ from qgis.core import *
 
 from const import Const
 
-from ui.form import Ui_dialogName
+from ui.form import Ui_Form
+from ui.docs_view import Ui_DocsView
 
 
 class FichaUrbanistica:
@@ -28,9 +29,9 @@ class FichaUrbanistica:
 
 		# Save and make, if they don't exist, the docs folders.
 		docs = os.path.join(self.plugin_dir, 'docs')
-		self.sector_folder = os.path.join(docs, '')
-		self.classi_folder = os.path.join(docs, '')
-		self.ord_folder = os.path.join(docs, '')
+		self.sector_folder = os.path.join(docs, 'sectors')
+		self.classi_folder = os.path.join(docs, 'classis')
+		self.ord_folder = os.path.join(docs, 'ords')
 
 		# Save, make and empty the folders for the resulting PDF.
 		reports_path = os.path.join(self.plugin_dir, 'reports')
@@ -110,11 +111,7 @@ class FichaUrbanistica:
 		info = self.queryInfo(id)
 
 		# Make dialog and set its atributes
-		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
-		dialog.ui = Ui_dialogName()
-		dialog.ui.setupUi(dialog)
-		dialog.setAttribute(Qt.WA_DeleteOnClose)
-		dialog.setWindowIcon(self.icon)
+		dialog = self.initDialog(Ui_Form)
 		dialog.setFixedSize(dialog.size())
 
 
@@ -179,11 +176,9 @@ class FichaUrbanistica:
 
 		# PDF generation functions
 		def makeShowUbicacioPdf(): # TODO
-			print 'ubicacio'
 			pass
 
 		def makeShowZonesPdf(): # TODO
-			print 'zones'
 			pass
 
 		# Connect the click signal to the functions
@@ -217,8 +212,18 @@ class FichaUrbanistica:
 
 
 	def webDialog(self, url): # TODO
-		print "Trying to open {}".format(url)
 		pass
+
+
+	def initDialog(self, Class):
+		"""Initializes a Dialog with the usual parameters of this plugin."""
+		# This function makes the code more pretty
+		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+		dialog.ui = Class()
+		dialog.ui.setupUi(dialog)
+		dialog.setAttribute(Qt.WA_DeleteOnClose)
+		dialog.setWindowIcon(self.icon)
+		return dialog
 
 
 
