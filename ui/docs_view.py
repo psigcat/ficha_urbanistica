@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'docs_view.ui'
 #
-# Created: Thu Oct 06 14:47:32 2016
+# Created: Thu Oct 06 18:18:42 2016
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,18 +26,25 @@ except AttributeError:
 class Ui_DocsView(object):
     def setupUi(self, DocsView):
         DocsView.setObjectName(_fromUtf8("DocsView"))
-        DocsView.resize(627, 480)
+        DocsView.resize(976, 618)
         self.verticalLayout = QtGui.QVBoxLayout(DocsView)
-        self.verticalLayout.setSpacing(2)
-        self.verticalLayout.setMargin(0)
+        self.verticalLayout.setSpacing(5)
+        self.verticalLayout.setMargin(2)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(40, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.imprimirBtn = QtGui.QPushButton(DocsView)
         self.imprimirBtn.setObjectName(_fromUtf8("imprimirBtn"))
         self.horizontalLayout.addWidget(self.imprimirBtn)
+        self.pdfBtn = QtGui.QPushButton(DocsView)
+        self.pdfBtn.setObjectName(_fromUtf8("pdfBtn"))
+        self.horizontalLayout.addWidget(self.pdfBtn)
+        spacerItem1 = QtGui.QSpacerItem(40, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.webView = QtWebKit.QWebView(DocsView)
         self.webView.setUrl(QtCore.QUrl(_fromUtf8("about:blank")))
@@ -50,5 +57,6 @@ class Ui_DocsView(object):
     def retranslateUi(self, DocsView):
         DocsView.setWindowTitle(_translate("DocsView", "Visor de documents", None))
         self.imprimirBtn.setText(_translate("DocsView", "Imprimir", None))
+        self.pdfBtn.setText(_translate("DocsView", "Exportar a PDF", None))
 
 from PyQt4 import QtWebKit

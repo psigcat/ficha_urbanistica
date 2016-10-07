@@ -2,6 +2,7 @@
 """Main file of the project ficha_urbanistica. This contains the main class as well as all the importan work."""
 
 import os
+import sys
 import psycopg2
 from PyQt4 import QtCore
 from PyQt4.QtCore import *
@@ -30,19 +31,20 @@ class FichaUrbanistica:
 		# Save and make, if they don't exist, the docs folders.
 		docs = os.path.join(self.plugin_dir, 'docs')
 		self.sector_folder = os.path.join(docs, 'sectors')
-		self.classi_folder = os.path.join(docs, 'classis')
-		self.ord_folder = os.path.join(docs, 'ords')
+		self.classi_folder = os.path.join(docs, 'classificacio')
+		self.ord_folder = os.path.join(docs, 'ordenacions')
 
 		# Save, make and empty the folders for the resulting PDF.
 		reports_path = os.path.join(self.plugin_dir, 'reports')
 		self.ubicacio_folder = os.path.join(reports_path, 'ubicacio')
-		self.permisos_folder = os.path.join(reports_path, 'permisos')
+		self.zones_folder = os.path.join(reports_path, 'zones')
 		createFolder(reports_path)
 		createFolder(self.ubicacio_folder)
 		emptyFolder(self.ubicacio_folder)
-		createFolder(self.permisos_folder)
-		emptyFolder(self.permisos_folder)
+		createFolder(self.zones_folder)
+		emptyFolder(self.zones_folder)
 
+		self.settings = QSettings("PSIG", "ficha_urbanistica")
 
 
 		# Connecting to the database
@@ -175,8 +177,13 @@ class FichaUrbanistica:
 
 
 		# PDF generation functions
-		def makeShowUbicacioPdf(): # TODO
-			pass
+		def makeShowUbicacioPdf():
+			ubicacioComposition = self.iface.activeComposers()[Const.PDF_UBICACIO].composition()
+			filename = os.path.join(self.zones_folder, '{}.pdf'.format(id));
+			if ubicacioComposition.exportAsPDF(filename):
+				openFile(filename)
+			else:
+				print "No s'ha pogut fer."
 
 		def makeShowZonesPdf(): # TODO
 			pass
@@ -199,31 +206,80 @@ class FichaUrbanistica:
 
 
 	def sectorLink(self, id):
-		filename = '{:s}.html'.format(id)
+		filename = '{:s}.htm'.format(id)
 		return Const.LINK_NORMATIVA.format(os.path.join(self.sector_folder, filename))
 
 	def classiLink(self, id):
-		filename = '{:s}.html'.format(id)
+		filename = '{:s}.htm'.format(id)
 		return Const.LINK_NORMATIVA.format(os.path.join(self.classi_folder, filename))
 
 	def ordLink(self, code):
-		filename = '{:s}.html'.format(code)
+		filename = '{:s}.htm'.format(code)
 		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
 
 
-	def webDialog(self, url): # TODO
-		pass
+	def webDialog(self, url):
+		dialog = self.initDialog(Ui_DocsView, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowMaximizeButtonHint)
+		dialog.ui.webView.setUrl(QUrl(url))
+
+		# TODO export & print
+		def printBtn():
+			printer = self.askPrinter()
+			if printer is not None:
+				#printer.setPageMargins(left, top, right, bottom, QPrinter.Millimeter)
+				dialog.ui.webView.print_(printer)
+
+		def exportPDF():
+			printer = self.getPDFPrinter(
+				os.path.splitext(os.path.basename(url))[0] # Get name without extension
+			)
+			if printer is not None:
+				#printer.setPageMargins(left, top, right, bottom, QPrinter.Millimeter)
+				dialog.ui.webView.print_(printer)
+
+		dialog.ui.imprimirBtn.clicked.connect(printBtn)
+		dialog.ui.pdfBtn.clicked.connect(exportPDF)
+
+		dialog.exec_()
 
 
-	def initDialog(self, Class):
+	def initDialog(self, Class, flags=Qt.WindowSystemMenuHint | Qt.WindowTitleHint):
 		"""Initializes a Dialog with the usual parameters of this plugin."""
 		# This function makes the code more pretty
-		dialog = QDialog(None, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+		dialog = QDialog(None, flags)
 		dialog.ui = Class()
 		dialog.ui.setupUi(dialog)
 		dialog.setAttribute(Qt.WA_DeleteOnClose)
 		dialog.setWindowIcon(self.icon)
+		dialog.setWindowModality(Qt.WindowModal)
 		return dialog
+
+	def getPDFPrinter(self, name):
+		printer = QPrinter(QPrinter.HighResolution)
+		path = QFileDialog.getSaveFileName(
+			None,
+			None,
+			os.path.join(
+				self.settings.value("save path", os.path.expanduser("~")),      #default folder
+				name+".pdf" #default filename
+			),
+			"PDF (*.pdf)"
+		)
+		if path is not None and path != "":
+			self.settings.setValue("save path", os.path.dirname(path))
+			printer.setOutputFileName(path)
+			return printer
+		else:
+			return None
+
+	def askPrinter(self):
+		printer = QPrinter()
+		select = QPrintDialog(printer)
+		if select.exec_():
+			return printer
+		else:
+			return None
+
 
 
 
@@ -258,4 +314,15 @@ def createFolder(folder):
 def emptyFolder(folder):
 	"""Removes all the files and subfolders in a folder."""
 	for f in os.listdir(folder):
-		os.remove(f)
+		os.remove(os.path.join(folder, f))
+
+def openFile(path):
+	"""Opens a file with the default application."""
+
+	# Multiple OS support
+	if sys.platform.startswith('darwin'):
+		subprocess.Popen(['open', path])
+	elif os.name == 'nt':
+		os.startfile(path)
+	elif os.name == 'posix':
+		subprocess.Popen(['xdg-open', path])
