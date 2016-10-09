@@ -81,7 +81,11 @@ CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(
           LIMIT 4
         )
       SELECT
-        ARRAY(SELECT codi FROM _2_) AS codi_zones,
+        ARRAY(
+          SELECT COALESCE(cod_ord, codi, '<error>')
+          FROM qualificacio_general, _2_
+          WHERE qualificacio_general.id = _2_.codi
+        ) AS codi_zones,
         ARRAY(SELECT percent FROM _2_) AS percent_zones
       LIMIT 1
     ) AS _zones ON TRUE
