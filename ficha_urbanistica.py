@@ -99,18 +99,15 @@ class FichaUrbanistica:
 
 		feature = features[0]
 		id_index = feature.fieldNameIndex(Const.ID_STR)
-		if id_index >= 0:
-			self.openForm(feature[id_index])
 
+		if id_index < 0:
+			return;
 
-
-	def openForm(self, id):
-		"""Opens the form which shows the information to the user."""
-
-		# This function supports multiple instances
 
 		# Query the necesary information
-		info = self.queryInfo(id)
+		#self.cursor.fetchall(); # ignore any residual information (should never do anything)
+		self.cursor.execute(Const.MAIN_QUERY, [feature[id_index]])
+		info = self.cursor.fetchone()
 
 		# Make dialog and set its atributes
 		dialog = self.initDialog(Ui_Form)
@@ -178,9 +175,19 @@ class FichaUrbanistica:
 
 		# PDF generation functions
 		def makeShowUbicacioPdf():
-			ubicacioComposition = self.iface.activeComposers()[Const.PDF_UBICACIO].composition()
-			filename = os.path.join(self.zones_folder, '{}.pdf'.format(id));
-			if ubicacioComposition.exportAsPDF(filename):
+			# Get composition
+			composition = self.iface.activeComposers()[Const.PDF_UBICACIO].composition()
+
+			# Set values
+			composition.setCustom
+
+			# Set main map to the propper position
+			main_map = composition.getComposerItemById('Mapa principal')
+			centerMap(main_map, feature)
+
+			# Make PDF
+			filename = os.path.join(self.zones_folder, '{}.pdf'.format(info[Const.REFCAT]));
+			if composition.exportAsPDF(filename):
 				openFile(filename)
 			else:
 				print "No s'ha pogut fer."
@@ -197,25 +204,6 @@ class FichaUrbanistica:
 		dialog.exec_()
 
 
-
-	def queryInfo(self, id):
-		"""Querys the information on the database."""
-		#self.cursor.fetchall(); # ignore any residual information (should never do anything)
-		self.cursor.execute(Const.QUERY, [id])
-		return self.cursor.fetchone()
-
-
-	def sectorLink(self, id):
-		filename = '{:s}.htm'.format(id)
-		return Const.LINK_NORMATIVA.format(os.path.join(self.sector_folder, filename))
-
-	def classiLink(self, id):
-		filename = '{:s}.htm'.format(id)
-		return Const.LINK_NORMATIVA.format(os.path.join(self.classi_folder, filename))
-
-	def ordLink(self, code):
-		filename = '{:s}.htm'.format(code)
-		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
 
 
 	def webDialog(self, url):
@@ -241,7 +229,6 @@ class FichaUrbanistica:
 		dialog.ui.pdfBtn.clicked.connect(exportPDF)
 
 		dialog.exec_()
-
 
 	def initDialog(self, Class, flags=Qt.WindowSystemMenuHint | Qt.WindowTitleHint):
 		"""Initializes a Dialog with the usual parameters of this plugin."""
@@ -272,14 +259,17 @@ class FichaUrbanistica:
 		else:
 			return None
 
-	def askPrinter(self):
-		printer = QPrinter()
-		select = QPrintDialog(printer)
-		if select.exec_():
-			return printer
-		else:
-			return None
+	def sectorLink(self, id):
+		filename = '{:s}.htm'.format(id)
+		return Const.LINK_NORMATIVA.format(os.path.join(self.sector_folder, filename))
 
+	def classiLink(self, id):
+		filename = '{:s}.htm'.format(id)
+		return Const.LINK_NORMATIVA.format(os.path.join(self.classi_folder, filename))
+
+	def ordLink(self, code):
+		filename = '{:s}.htm'.format(code)
+		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
 
 
 
@@ -287,23 +277,18 @@ class FichaUrbanistica:
 
 
 # Utilities
+def centerMap(map, feature):
+	newExtent = centerRect(map.extent(), feature.geometry().boundingBox().center())
+	map.setNewExtent(newExtent)
 
-# Unicode QString generator function
-try:
-    qu = QtCore.QString.fromUtf8
-except AttributeError:
-    def qu(s):
-        return s
-
-# Qt translate function
-try:
-    def _translate(context, text, disambig):
-        return QApplication.translate(context, text, disambig, QApplication.UnicodeUTF8)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QApplication.translate(context, text, disambig)
-def tr(text):
-    return _translate("ficha_urbanistica", text, None)
+def centerRect(rect, point):
+	hw = rect.width() / 2
+	hh = rect.height() / 2
+	xMin = point.x() - hw
+	xMax = point.x() + hw
+	yMin = point.y() - hh
+	yMax = point.y() + hh
+	return type(rect)(xMin, yMin, xMax, yMax)
 
 
 def createFolder(folder):
@@ -326,3 +311,28 @@ def openFile(path):
 		os.startfile(path)
 	elif os.name == 'posix':
 		subprocess.Popen(['xdg-open', path])
+
+def askPrinter(self):
+	printer = QPrinter()
+	select = QPrintDialog(printer)
+	if select.exec_():
+		return printer
+	else:
+		return None
+
+# Unicode QString generator function
+try:
+    qu = QtCore.QString.fromUtf8
+except AttributeError:
+    def qu(s):
+        return s
+
+# Qt translate function
+try:
+	def _translate(context, text, disambig):
+		return QApplication.translate(context, text, disambig, QApplication.UnicodeUTF8)
+except AttributeError:
+	def _translate(context, text, disambig):
+		return QApplication.translate(context, text, disambig)
+def tr(text):
+	return _translate("ficha_urbanistica", text, None)
