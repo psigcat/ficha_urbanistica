@@ -10,6 +10,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 
 from const import Const
+from config import configuration
 
 from ui.form import Ui_Form
 from ui.docs_view import Ui_DocsView
@@ -29,10 +30,10 @@ class FichaUrbanistica:
 		self.pluginName = os.path.basename(self.plugin_dir)
 
 		# Save and make, if they don't exist, the docs folders.
-		docs = os.path.join(self.plugin_dir, 'docs')
-		self.sector_folder = os.path.join(docs, 'sectors')
-		self.classi_folder = os.path.join(docs, 'classificacio')
-		self.ord_folder = os.path.join(docs, 'ordenacions')
+		self.docs_folder = configuration.DOCS_FOLDER
+		self.sector_folder = os.path.join(self.docs_folder, 'sectors')
+		self.classi_folder = os.path.join(self.docs_folder, 'classificacio')
+		self.ord_folder = os.path.join(self.docs_folder, 'ordenacions')
 
 		# Save, make and empty the folders for the resulting PDF.
 		reports_path = os.path.join(self.plugin_dir, 'reports')
@@ -91,6 +92,8 @@ class FichaUrbanistica:
 		
 		# Get the active layer (where the selected form is).
 		layer = self.iface.activeLayer()
+		if layer is None:
+			return
 
 		# single feature
 		features = layer.selectedFeatures()
@@ -98,7 +101,7 @@ class FichaUrbanistica:
 			return
 
 		feature = features[0]
-		id_index = feature.fieldNameIndex(Const.ID_STR)
+		id_index = feature.fieldNameIndex(configuration.ID_STR)
 
 		if id_index < 0:
 			return;
@@ -112,6 +115,23 @@ class FichaUrbanistica:
 		# Make dialog and set its atributes
 		dialog = self.initDialog(Ui_Form)
 		dialog.setFixedSize(dialog.size())
+
+		# Static links
+		dialog.ui.lblCondGenerals.setText(Const.LINK_COND.format(self.docs_folder))
+		dialog.ui.lblCondGenerals.linkActivated.connect(self.webDialog)
+		
+		dialog.ui.lblDotacioAparc.setText(Const.LINK_DOT.format(self.docs_folder))
+		dialog.ui.lblDotacioAparc.linkActivated.connect(self.webDialog)
+		
+		dialog.ui.lblRegulacioAparc.setText(Const.LINK_REG.format(self.docs_folder))
+		dialog.ui.lblRegulacioAparc.linkActivated.connect(self.webDialog)
+		
+		dialog.ui.lblParamFinca.setText(Const.LINK_FINCA.format(self.docs_folder))
+		dialog.ui.lblParamFinca.linkActivated.connect(self.webDialog)
+		
+		dialog.ui.lblParamEdificacio.setText(Const.LINK_EDIF.format(self.docs_folder))
+		dialog.ui.lblParamEdificacio.linkActivated.connect(self.webDialog)
+		
 
 
 		# Show data
@@ -175,11 +195,29 @@ class FichaUrbanistica:
 
 		# PDF generation functions
 		def makeShowUbicacioPdf():
+			# Make temporary layer
+			#s_layer = QgsVectorLayer('Polygon', 'temp_selected_parcela', 'memory')
+			#s_dp = s_layer.dataProvider()
+			#s_feature = QgsFeature()
+			#s_feature.setGeometry(QgsGeometry.fromPolygon(feature.geometry().asPolygon()))
+			#s_dp.addFeatures([s_feature])
+			#s_layer.updateExtents()
+
 			# Get composition
-			composition = self.iface.activeComposers()[Const.PDF_UBICACIO].composition()
+			composition = None
+			for item in self.iface.activeComposers():
+				if item.composerWindow().windowTitle() == Const.PDF_UBICACIO:
+					composition = item.composition()
+					break
+
+			if composition is None:
+				return
 
 			# Set values
-			composition.setCustom
+			QgsExpressionContextUtils.setProjectVariable('refcat', info[Const.REFCAT])
+			QgsExpressionContextUtils.setProjectVariable('area', '{:.4f}'.format(info[Const.AREA]))
+			QgsExpressionContextUtils.setProjectVariable('adreca', info[Const.ADRECA])
+
 
 			# Set main map to the propper position
 			main_map = composition.getComposerItemById('Mapa principal')
@@ -191,6 +229,9 @@ class FichaUrbanistica:
 				openFile(filename)
 			else:
 				print "No s'ha pogut fer."
+
+			# Delete temporary layer
+			#QgsMapLayerRegistry.instance().removeMapLayers([s_layer.id()])
 
 		def makeShowZonesPdf(): # TODO
 			pass
