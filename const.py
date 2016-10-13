@@ -39,5 +39,5 @@ class Const:
 		db_credentials.password)
 
 	# Query the infrmation from the database
-	MAIN_QUERY = 'SELECT * FROM ficha_urbanistica(%s);'
+	MAIN_QUERY = 'SELECT * FROM data.ficha_urbanistica(%s);'
 	QUALI_QUERY = 'SELECT * FROM qualificacio_general WHERE id = %s;'

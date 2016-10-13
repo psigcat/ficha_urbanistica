@@ -1,5 +1,5 @@
 -- Funcio que retorna una taula amb tots els valors necesaris pel formulari.
-CREATE OR REPLACE FUNCTION ficha_urbanistica(int) RETURNS TABLE(
+CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
   refcat text,
   area double precision,
   adreca text,
