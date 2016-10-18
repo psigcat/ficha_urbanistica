@@ -29,11 +29,16 @@ class FichaUrbanistica:
 		self.plugin_dir = os.path.dirname(__file__)
 		self.pluginName = os.path.basename(self.plugin_dir)
 
+		# Config paths
+		self.config_folder = os.path.join(self.plugin_dir, 'config')
+		self.style_doc_path = os.path.join(self.config_folder, 'selected_style.qml')
+
 		# Save and make, if they don't exist, the docs folders.
 		self.docs_folder = configuration.DOCS_FOLDER
 		self.sector_folder = os.path.join(self.docs_folder, 'sectors')
 		self.classi_folder = os.path.join(self.docs_folder, 'classificacio')
 		self.ord_folder = os.path.join(self.docs_folder, 'ordenacions')
+
 
 		# Save, make and empty the folders for the resulting PDF.
 		reports_path = os.path.join(self.plugin_dir, 'reports')
@@ -196,42 +201,56 @@ class FichaUrbanistica:
 		# PDF generation functions
 		def makeShowUbicacioPdf():
 			# Make temporary layer
-			#s_layer = QgsVectorLayer('Polygon', 'temp_selected_parcela', 'memory')
-			#s_dp = s_layer.dataProvider()
-			#s_feature = QgsFeature()
-			#s_feature.setGeometry(QgsGeometry.fromPolygon(feature.geometry().asPolygon()))
-			#s_dp.addFeatures([s_feature])
-			#s_layer.updateExtents()
+			vl = self.iface.addVectorLayer("Polygon?crs=epsg:25831&field=id:integer&index=yes", "temp_print_polygon", "memory")
+			vl.loadNamedStyle(self.style_doc_path)
+			pr = vl.dataProvider()
 
-			# Get composition
-			composition = None
-			for item in self.iface.activeComposers():
-				if item.composerWindow().windowTitle() == Const.PDF_UBICACIO:
-					composition = item.composition()
-					break
+			fet = QgsFeature()
+			fet.setGeometry(QgsGeometry(feature.geometry())) #copy the geometry
+			pr.addFeatures([fet])
+			vl.updateExtents()
 
-			if composition is None:
-				return
+			moveLayer(vl, 0)
 
-			# Set values
-			QgsExpressionContextUtils.setProjectVariable('refcat', info[Const.REFCAT])
-			QgsExpressionContextUtils.setProjectVariable('area', '{:.4f}'.format(info[Const.AREA]))
-			QgsExpressionContextUtils.setProjectVariable('adreca', info[Const.ADRECA])
+			def refreshed():
+				# Disconnect signal
+				self.iface.mapCanvas().mapCanvasRefreshed.disconnect(refreshed)
+
+				# Get composition
+				composition = None
+				for item in self.iface.activeComposers():
+					if item.composerWindow().windowTitle() == Const.PDF_UBICACIO:
+						composition = item.composition()
+						break
+
+				if composition is None:
+					return
+
+				# Set values
+				QgsExpressionContextUtils.setProjectVariable('refcat', info[Const.REFCAT])
+				QgsExpressionContextUtils.setProjectVariable('area', '{:.4f}'.format(info[Const.AREA]))
+				QgsExpressionContextUtils.setProjectVariable('adreca', info[Const.ADRECA])
 
 
-			# Set main map to the propper position
-			main_map = composition.getComposerItemById('Mapa principal')
-			centerMap(main_map, feature)
+				# Set main map to the propper position
+				main_map = composition.getComposerItemById('Mapa principal')
+				centerMap(main_map, feature)
 
-			# Make PDF
-			filename = os.path.join(self.zones_folder, '{}.pdf'.format(info[Const.REFCAT]));
-			if composition.exportAsPDF(filename):
-				openFile(filename)
-			else:
-				print "No s'ha pogut fer."
+				# Make PDF
+				filename = os.path.join(self.zones_folder, '{}.pdf'.format(info[Const.REFCAT]));
+				if composition.exportAsPDF(filename):
+					openFile(filename)
+				else:
+					print "No s'ha pogut fer."
 
-			# Delete temporary layer
-			#QgsMapLayerRegistry.instance().removeMapLayers([s_layer.id()])
+				# Delete temporary layer
+				QgsMapLayerRegistry.instance().removeMapLayers( [vl.id()] )
+
+				# Repaint again
+				self.iface.mapCanvas().refresh()
+
+			self.iface.mapCanvas().mapCanvasRefreshed.connect(refreshed)
+			self.iface.mapCanvas().refresh()
 
 		def makeShowZonesPdf(): # TODO
 			pass
@@ -331,6 +350,13 @@ def centerRect(rect, point):
 	yMax = point.y() + hh
 	return type(rect)(xMin, yMin, xMax, yMax)
 
+def moveLayer(layer, pos):
+	root = QgsProject.instance().layerTreeRoot()
+	node = root.findLayer(layer.id())
+	clone = node.clone()
+	parent = node.parent()
+	parent.insertChildNode(pos, clone)
+	parent.removeChildNode(node)
 
 def createFolder(folder):
 	"""Makes a folder unless it does already exist."""
