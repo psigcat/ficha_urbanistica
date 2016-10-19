@@ -15,7 +15,7 @@ from config import configuration
 from ui.form import Ui_Form
 from ui.docs_view import Ui_DocsView
 
-
+os.path.basename(os.path.dirname(__file__))
 class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
 
@@ -53,20 +53,53 @@ class FichaUrbanistica:
 		self.settings = QSettings("PSIG", "ficha_urbanistica")
 
 
+
+		self.icon = None
+		self.action = None
+
+		self.projectChange()
+
+	def projectChange(self):
+		# Disconnect the server
+		self.cursor = None
+		self.conn = None
+
+		# Check if there is an actual project
+		if not QgsProject.instance().name():
+			return
+
+		# Get the credentials from the QGIS
+		s = QSettings()
+		s.beginGroup("PostgreSQL/connections")
+		services = s.childGroups()
+
+		service = None
+
+		if len(services) == 1:
+			service = services[0]
+		elif len(services) == 2 and services[0] == u'Localhost':
+			service = services[1]
+		elif len(services) == 2 and services[1] == u'Localhost':
+			service = services[0]
+		else:
+			if config_service in services:
+				service = config_service
+			else:
+				return
+
+		# TODO 
+		service_uri =
+
 		# Connecting to the database
 		try:
-			# Cedentials in the credentials file. The credentials should not be uploaded to the public repository
-			self.conn = psycopg2.connect(Const.DB_CREDENTIALS)
+			self.conn = psycopg2.connect(service_uri)
 			self.cursor = self.conn.cursor()
 		except psycopg2.DatabaseError as e:
 			print u'Error al connectar amb la base de dades.'
 			print '{:s}'.format(e)
 			print ''
 			print u'No es carregara el plugin.'
-			return # This return means there is no trigger set
 
-		self.icon = None
-		self.action = None
 
 
 

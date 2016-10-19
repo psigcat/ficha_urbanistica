@@ -30,4 +30,13 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from ficha_urbanistica import FichaUrbanistica
-    return FichaUrbanistica(iface)
+
+    # Construct the plugin
+    plugin = FichaUrbanistica(iface)
+
+    # Add plugin project change triggers
+    iface.projectRead.connect(plugin.projectChange)
+    iface.newProjectCreated.connect(plugin.projectChange)
+
+    # return the plugin
+    return plugin
