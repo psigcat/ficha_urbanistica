@@ -229,7 +229,7 @@ class FichaUrbanistica:
 
 				# Set values
 				QgsExpressionContextUtils.setProjectVariable('refcat', info[Const.REFCAT])
-				QgsExpressionContextUtils.setProjectVariable('area', '{:.4f}'.format(info[Const.AREA]))
+				QgsExpressionContextUtils.setProjectVariable('area', '{:.0f}'.format(info[Const.AREA]))
 				QgsExpressionContextUtils.setProjectVariable('adreca', info[Const.ADRECA])
 
 
