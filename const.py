@@ -22,8 +22,9 @@ class Const:
 	DESCR_CLASSI = 4
 	CODI_ZONES = 5
 	PERCENT_ZONES = 6
-	CODI_SECTOR = 7
-	DESCR_SECTOR = 8
+	CODI_GENERAL_ZONES = 7
+	CODI_SECTOR = 8
+	DESCR_SECTOR = 9
 
 	# PDF composite index
 	PDF_UBICACIO = u'Fitxa 1 - Ubicació'

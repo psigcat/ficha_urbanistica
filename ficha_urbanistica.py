@@ -156,18 +156,19 @@ class FichaUrbanistica:
 
 		codes = info[Const.CODI_ZONES]
 		percents = info[Const.PERCENT_ZONES]
+		general_codes = info[Const.CODI_GENERAL_ZONES]
 
 		if len(codes) >= 1:
 			dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
 			dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
-			dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(codes[0])))
+			dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(general_codes[0])))
 			dialog.ui.lblOrd_1.linkActivated.connect(self.webDialog)
 
 
 		if len(codes) >= 2:
 			dialog.ui.txtClau_2.setText(u'{}'.format(str(codes[1])))
 			dialog.ui.txtPer_2.setText(u'{:02.2f}'.format(percents[1]))
-			dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(codes[1])))
+			dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(general_codes[1])))
 			dialog.ui.lblOrd_2.linkActivated.connect(self.webDialog)
 		else:
 			dialog.ui.txtClau_2.setHidden(True)
@@ -178,7 +179,7 @@ class FichaUrbanistica:
 		if len(codes) >= 3:
 			dialog.ui.txtClau_3.setText(u'{}'.format(str(codes[2])))
 			dialog.ui.txtPer_3.setText(u'{:02.2f}'.format(percents[2]))
-			dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(codes[2])))
+			dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(general_codes[2])))
 			dialog.ui.lblOrd_3.linkActivated.connect(self.webDialog)
 		else:
 			dialog.ui.txtClau_3.setHidden(True)
@@ -189,7 +190,7 @@ class FichaUrbanistica:
 		if len(codes) >= 4:
 			dialog.ui.txtClau_4.setText(u'{}'.format(str(codes[3])))
 			dialog.ui.txtPer_4.setText(u'{:02.2f}'.format(percents[3]))
-			dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(codes[3])))
+			dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(general_codes[3])))
 			dialog.ui.lblOrd_4.linkActivated.connect(self.webDialog)
 		else:
 			dialog.ui.txtClau_4.setHidden(True)

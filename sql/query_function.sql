@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
   descr_classi text,
   codi_zones character varying(10)[],
   percent_zones double precision[],
+  codi_general_zones character varying(10)[],
   codi_sector text,
   descr_sector text
 ) AS $$
@@ -34,6 +35,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
     _classi.descr AS descr_classi,
     codi_zones,
     percent_zones,
+    codi_general_zones,
     _sector.codi AS codi_sector,
     _sector.descr AS descr_sector
 
@@ -81,12 +83,13 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
           LIMIT 4
         )
       SELECT
+        ARRAY(SELECT codi FROM _2_) AS codi_zones,
+        ARRAY(SELECT percent FROM _2_) AS percent_zones,
         ARRAY(
           SELECT COALESCE(cod_ord, codi, '<error>')
           FROM data.qualificacio_general, _2_
           WHERE qualificacio_general.id = _2_.codi
-        ) AS codi_zones,
-        ARRAY(SELECT percent FROM _2_) AS percent_zones
+        ) AS codi_general_zones
       LIMIT 1
     ) AS _zones ON TRUE
 
