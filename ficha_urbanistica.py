@@ -65,30 +65,11 @@ class FichaUrbanistica:
 		self.conn = None
 
 		# Check if there is an actual project
-		if not QgsProject.instance().name():
+		if not QgsProject.instance().title():
 			return
 
-		# Get the credentials from the QGIS
-		s = QSettings()
-		s.beginGroup("PostgreSQL/connections")
-		services = s.childGroups()
-
-		service = None
-
-		if len(services) == 1:
-			service = services[0]
-		elif len(services) == 2 and services[0] == u'Localhost':
-			service = services[1]
-		elif len(services) == 2 and services[1] == u'Localhost':
-			service = services[0]
-		else:
-			if config_service in services:
-				service = config_service
-			else:
-				return
-
-		# TODO 
-		service_uri =
+		# Get the credentials
+		service_uri = getServiceUri()
 
 		# Connecting to the database
 		try:
@@ -371,6 +352,48 @@ class FichaUrbanistica:
 
 
 # Utilities
+def get_pgservices_conf(path):
+	if not path:
+		return None
+
+	try:
+		with open(path) as file:
+			config_sample = file.read()
+	except IOError:
+		return None
+
+	config = ConfigParser.RawConfigParser()
+	config.readfp(io.BytesIO(config_sample))
+
+	r = {}
+	for service in config.sections():
+		if (config.has_option(service, 'host') and
+			config.has_option(service, 'port') and
+			config.has_option(service, 'dbname') and
+			config.has_option(service, 'user') and
+			config.has_option(service, 'password')):
+				r[service] = u'host={} port={} dbname={} user={} password={}'.format(
+					config.get(service, 'host')
+					config.get(service, 'port')
+					config.get(service, 'dbname')
+					config.get(service, 'user')
+					config.get(service, 'password')
+				)
+
+	return r
+
+def getServiceUri(config_service):
+	# Look at the pg_config files
+	pg_services = {}
+	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf') ).item() + pg_services_conf.items())
+	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')          ).item() + pg_services_conf.items())
+
+	if config_service:
+		return pg_services.get(config_service)
+	elif len(pg_services) == 1:
+		return dic.values()[0]
+
+
 def centerMap(map, feature):
 	newExtent = centerRect(map.extent(), feature.geometry().boundingBox().center())
 	map.setNewExtent(newExtent)
