@@ -3,6 +3,7 @@
 
 import os
 import sys
+import configparser
 import psycopg2
 from PyQt4 import QtCore
 from PyQt4.QtCore import *
@@ -69,7 +70,7 @@ class FichaUrbanistica:
 			return
 
 		# Get the credentials
-		service_uri = getServiceUri()
+		service_uri = getServiceUri(configuration.SERVICE)
 
 		# Connecting to the database
 		try:
@@ -368,13 +369,12 @@ def get_pgservices_conf(path):
 	r = {}
 	for service in config.sections():
 		if (config.has_option(service, 'host') and
-			config.has_option(service, 'port') and
 			config.has_option(service, 'dbname') and
 			config.has_option(service, 'user') and
 			config.has_option(service, 'password')):
 				r[service] = u'host={} port={} dbname={} user={} password={}'.format(
 					config.get(service, 'host')
-					config.get(service, 'port')
+					config.get(service, 'port', '5432')
 					config.get(service, 'dbname')
 					config.get(service, 'user')
 					config.get(service, 'password')
