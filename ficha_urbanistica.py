@@ -3,6 +3,7 @@
 
 import os
 import sys
+import io
 import configparser
 import psycopg2
 from PyQt4 import QtCore
@@ -354,29 +355,35 @@ class FichaUrbanistica:
 
 # Utilities
 def get_pgservices_conf(path):
+	r = {}
 	if not path:
-		return None
+		return r
 
 	try:
 		with open(path) as file:
 			config_sample = file.read()
 	except IOError:
-		return None
+		return r
 
-	config = ConfigParser.RawConfigParser()
+	config = configparser.RawConfigParser()
 	config.readfp(io.BytesIO(config_sample))
 
-	r = {}
 	for service in config.sections():
 		if (config.has_option(service, 'host') and
 			config.has_option(service, 'dbname') and
 			config.has_option(service, 'user') and
 			config.has_option(service, 'password')):
+
+				if config.has_option(service, 'port'):
+					port = config.get(service, 'port')
+				else:
+					port = '5432'
+
 				r[service] = u'host={} port={} dbname={} user={} password={}'.format(
-					config.get(service, 'host')
-					config.get(service, 'port', '5432')
-					config.get(service, 'dbname')
-					config.get(service, 'user')
+					config.get(service, 'host'),
+					port,
+					config.get(service, 'dbname'),
+					config.get(service, 'user'),
 					config.get(service, 'password')
 				)
 
@@ -385,13 +392,13 @@ def get_pgservices_conf(path):
 def getServiceUri(config_service):
 	# Look at the pg_config files
 	pg_services = {}
-	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf') ).item() + pg_services_conf.items())
-	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')          ).item() + pg_services_conf.items())
+	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf') ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')          ).items() + pg_services.items())
 
 	if config_service:
 		return pg_services.get(config_service)
 	elif len(pg_services) == 1:
-		return dic.values()[0]
+		return pg_services.values()[0]
 
 
 def centerMap(map, feature):
