@@ -391,12 +391,12 @@ def get_pgservices_conf(path):
 def getServiceUri(config_service):
 	this_folder = os.path.dirname(__file__)
 	# Look at the pg_config files
-	pg_services =      get_pgservices_conf( os.path.join(this_folder, 'config', 'pg_service.conf')                 )
-	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf')                               ).items() + pg_services.items())
-	pg_services = dict(get_pgservices_conf( os.path.join(os.environ.get('PGSERVICEFILE') or '', 'pg_service.conf') ).items() + pg_services.items())
-	pg_services = dict(get_pgservices_conf( os.environ.get('PGSYSCONFDIR') or ''                                   ).items() + pg_services.items())
+	pg_services =      get_pgservices_conf( os.path.join(this_folder, 'config', 'pg_service.conf')                )
+	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf')                              ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.path.join(os.environ.get('PGSYSCONFDIR') or '', 'pg_service.conf') ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')                                       ).items() + pg_services.items())
 	
-	print pg_services # debug
+	#print pg_services # debug
 
 	if config_service:
 		return pg_services[config_service]
