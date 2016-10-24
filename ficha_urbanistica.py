@@ -4,7 +4,7 @@
 import os
 import sys
 import io
-import configparser
+import ConfigParser
 import psycopg2
 from PyQt4 import QtCore
 from PyQt4.QtCore import *
@@ -365,7 +365,7 @@ def get_pgservices_conf(path):
 	except IOError:
 		return r
 
-	config = configparser.RawConfigParser()
+	config = ConfigParser.RawConfigParser()
 	config.readfp(io.BytesIO(config_sample))
 
 	for service in config.sections():
@@ -395,7 +395,7 @@ def getServiceUri(config_service):
 	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf') ).items() + pg_services.items())
 	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')          ).items() + pg_services.items())
 
-	print pg_services # debug
+	#print pg_services # debug
 
 	if config_service:
 		return pg_services.get(config_service)
