@@ -389,7 +389,7 @@ def get_pgservices_conf(path):
 	return r
 
 def getServiceUri(config_service):
-	this_folder = os.path.basename(os.path.dirname(__file__))
+	this_folder = os.path.dirname(__file__)
 	# Look at the pg_config files
 	pg_services = {}
 	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf')               ).items() + pg_services.items())
