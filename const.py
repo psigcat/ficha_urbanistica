@@ -2,7 +2,6 @@
 """File that has all constants (including the configuration)"""
 
 import config
-from config import db_credentials
 
 class Const:
 	"""Constains all the constants used in the plugin."""
@@ -29,15 +28,6 @@ class Const:
 	# PDF composite index
 	PDF_UBICACIO = u'Fitxa 1 - Ubicació'
 	PDF_ZONES = u'Fitxa 2 - Zones'
-
-
-	# Database credentials generation
-	DB_CREDENTIALS = "host={} port={} dbname={} user={} password={}".format(
-		db_credentials.host,
-		db_credentials.port,
-		db_credentials.dbname,
-		db_credentials.user,
-		db_credentials.password)
 
 	# Query the infrmation from the database
 	MAIN_QUERY = 'SELECT * FROM data.ficha_urbanistica(%s);'

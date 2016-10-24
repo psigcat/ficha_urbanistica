@@ -160,7 +160,7 @@ class FichaUrbanistica:
 		dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
 		dialog.ui.txtAdreca.setText(u'{}'.format( info[Const.ADRECA] ))
 
-		if info[7] is not None: # It may not be part of any sector
+		if info[Const.CODI_SECTOR] is not None: # It may not be part of any sector
 			dialog.ui.txtSector.setText(u'{} - {}'.format( info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR] ))
 			dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[Const.CODI_SECTOR])))
 		else:
@@ -289,7 +289,7 @@ class FichaUrbanistica:
 
 		# TODO export & print
 		def printBtn():
-			printer = self.askPrinter()
+			printer = askPrinter()
 			if printer is not None:
 				#printer.setPageMargins(left, top, right, bottom, QPrinter.Millimeter)
 				dialog.ui.webView.print_(printer)
@@ -443,7 +443,7 @@ def openFile(path):
 	elif os.name == 'posix':
 		subprocess.Popen(['xdg-open', path])
 
-def askPrinter(self):
+def askPrinter():
 	printer = QPrinter()
 	select = QPrintDialog(printer)
 	if select.exec_():
