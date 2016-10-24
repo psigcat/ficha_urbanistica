@@ -17,7 +17,6 @@ from config import configuration
 from ui.form import Ui_Form
 from ui.docs_view import Ui_DocsView
 
-os.path.basename(os.path.dirname(__file__))
 class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
 
@@ -390,10 +389,12 @@ def get_pgservices_conf(path):
 	return r
 
 def getServiceUri(config_service):
+	this_folder = os.path.basename(os.path.dirname(__file__))
 	# Look at the pg_config files
 	pg_services = {}
-	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf') ).items() + pg_services.items())
-	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')          ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf')               ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')                        ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.path.join(this_folder, 'config', 'pg_service.conf') ).items() + pg_services.items())
 
 	#print pg_services # debug
 
