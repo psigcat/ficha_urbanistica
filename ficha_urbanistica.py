@@ -395,6 +395,8 @@ def getServiceUri(config_service):
 	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf') ).items() + pg_services.items())
 	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')          ).items() + pg_services.items())
 
+	print pg_services # debug
+
 	if config_service:
 		return pg_services.get(config_service)
 	elif len(pg_services) == 1:
