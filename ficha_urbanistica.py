@@ -399,7 +399,7 @@ def getServiceUri(config_service):
 	#print pg_services # debug
 
 	if config_service:
-		return pg_services.get(config_service)
+		return pg_services[config_service]
 	elif len(pg_services) == 1:
 		return pg_services.values()[0]
 
