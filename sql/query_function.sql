@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
       LIMIT 1
     ),
     _quali AS (
-      SELECT __quali.codi AS codi, SUM(ST_Area(__quali.geom)) AS area
+      SELECT __quali.codi AS codi, SUM(ST_Area(ST_Intersection(_parcela.geom, __quali.geom))) AS area
       FROM carto.qualificacions AS __quali, _parcela
       WHERE ST_Intersects(_parcela.geom, __quali.geom)
       GROUP BY __quali.codi
