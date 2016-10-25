@@ -77,10 +77,7 @@ class FichaUrbanistica:
 			self.conn = psycopg2.connect(service_uri)
 			self.cursor = self.conn.cursor()
 		except psycopg2.DatabaseError as e:
-			print u'Error al connectar amb la base de dades.'
-			print '{:s}'.format(e)
-			print ''
-			print u'No es carregara el plugin.'
+			self.error(u'Error al connectar amb la base de dades.')
 
 
 
@@ -257,7 +254,7 @@ class FichaUrbanistica:
 				if composition.exportAsPDF(filename):
 					openFile(filename)
 				else:
-					print "No s'ha pogut fer."
+					self.error(u"No s'ha pogut convertir a PDF.")
 
 				# Delete temporary layer
 				QgsMapLayerRegistry.instance().removeMapLayers( [vl.id()] )
@@ -348,11 +345,38 @@ class FichaUrbanistica:
 		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
 
 
+	def error(self, msg):
+		messageBox = QMessageBox(QMessageBox.Critical, tr("Error"), msg)
+		messageBox.setWindowIcon(self.icon)
+		messageBox.exec_()
 
 
 
 
 # Utilities
+
+def createFolder(folder):
+	"""Makes a folder unless it does already exist."""
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
+def emptyFolder(folder):
+	"""Removes all the files and subfolders in a folder."""
+	for f in os.listdir(folder):
+		os.remove(os.path.join(folder, f))
+
+def openFile(path):
+	"""Opens a file with the default application."""
+
+	# Multiple OS support
+	if sys.platform.startswith('darwin'):
+		subprocess.Popen(['open', path])
+	elif os.name == 'nt':
+		os.startfile(path)
+	elif os.name == 'posix':
+		subprocess.Popen(['xdg-open', path])
+
+
 def get_pgservices_conf(path):
 	r = {}
 	if not path:
@@ -395,8 +419,6 @@ def getServiceUri(config_service):
 	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf')                              ).items() + pg_services.items())
 	pg_services = dict(get_pgservices_conf( os.path.join(os.environ.get('PGSYSCONFDIR') or '', 'pg_service.conf') ).items() + pg_services.items())
 	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')                                       ).items() + pg_services.items())
-	
-	#print pg_services # debug
 
 	if config_service:
 		return pg_services[config_service]
@@ -424,27 +446,6 @@ def moveLayer(layer, pos):
 	parent = node.parent()
 	parent.insertChildNode(pos, clone)
 	parent.removeChildNode(node)
-
-def createFolder(folder):
-	"""Makes a folder unless it does already exist."""
-	if not os.path.exists(folder):
-		os.makedirs(folder)
-
-def emptyFolder(folder):
-	"""Removes all the files and subfolders in a folder."""
-	for f in os.listdir(folder):
-		os.remove(os.path.join(folder, f))
-
-def openFile(path):
-	"""Opens a file with the default application."""
-
-	# Multiple OS support
-	if sys.platform.startswith('darwin'):
-		subprocess.Popen(['open', path])
-	elif os.name == 'nt':
-		os.startfile(path)
-	elif os.name == 'posix':
-		subprocess.Popen(['xdg-open', path])
 
 def askPrinter():
 	printer = QPrinter()
