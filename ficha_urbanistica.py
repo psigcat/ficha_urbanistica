@@ -30,6 +30,7 @@ class FichaUrbanistica:
 		self.plugin_dir = os.path.dirname(__file__)
 		self.pluginName = os.path.basename(self.plugin_dir)
 
+
 		# Config paths
 		self.config_folder = os.path.join(self.plugin_dir, 'config')
 		self.style_doc_path = os.path.join(self.config_folder, 'selected_style.qml')
@@ -54,8 +55,10 @@ class FichaUrbanistica:
 		self.settings = QSettings("PSIG", "ficha_urbanistica")
 
 
+		# Find and safe the plugin's icon
+		filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
+		self.icon = QIcon(str(filename))
 
-		self.icon = None
 		self.action = None
 
 		self.projectChange()
@@ -72,6 +75,10 @@ class FichaUrbanistica:
 		# Get the credentials
 		service_uri = getServiceUri(configuration.SERVICE)
 
+		if not service_uri:
+			self.error(u"Hi ha algun error a la configuració del servei de la base de dades.")
+			return
+
 		# Connecting to the database
 		try:
 			self.conn = psycopg2.connect(service_uri)
@@ -84,10 +91,6 @@ class FichaUrbanistica:
 
 	def initGui(self):
 		"""Called when the gui must be generated."""
-
-		# Find and safe the plugin's icon
-		filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
-		self.icon = QIcon(str(filename))
 
 		# Add menu and toolbar entries (basically allows to activate it)
 		self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
@@ -421,7 +424,7 @@ def getServiceUri(config_service):
 	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')                                       ).items() + pg_services.items())
 
 	if config_service:
-		return pg_services[config_service]
+		return pg_services.get(config_service)
 	elif len(pg_services) == 1:
 		return pg_services.values()[0]
 
