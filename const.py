@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""File that has all constants (including the configuration)"""
-
-import config
+"""File that has all constants"""
 
 class Const:
 	"""Constains all the constants used in the plugin."""

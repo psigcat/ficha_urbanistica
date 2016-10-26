@@ -12,10 +12,10 @@ from PyQt4.QtGui import *
 from qgis.core import *
 
 from const import Const
-from config import configuration
 
 from ui.form import Ui_Form
 from ui.docs_view import Ui_DocsView
+
 
 class FichaUrbanistica:
 	"""Main class of the project ficha_urbanistica"""
@@ -29,17 +29,6 @@ class FichaUrbanistica:
 
 		self.plugin_dir = os.path.dirname(__file__)
 		self.pluginName = os.path.basename(self.plugin_dir)
-
-
-		# Config paths
-		self.config_folder = os.path.join(self.plugin_dir, 'config')
-		self.style_doc_path = os.path.join(self.config_folder, 'selected_style.qml')
-
-		# Save and make, if they don't exist, the docs folders.
-		self.docs_folder = configuration.DOCS_FOLDER
-		self.sector_folder = os.path.join(self.docs_folder, 'sectors')
-		self.classi_folder = os.path.join(self.docs_folder, 'classificacio')
-		self.ord_folder = os.path.join(self.docs_folder, 'ordenacions')
 
 
 		# Save, make and empty the folders for the resulting PDF.
@@ -59,11 +48,31 @@ class FichaUrbanistica:
 		filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
 		self.icon = QIcon(str(filename))
 
+		self.style_doc_path = os.path.join(self.plugin_dir, 'config/selected_style.qml')
+
 		self.action = None
 
 		self.projectChange()
 
 	def projectChange(self):
+		self.project_folder = QgsProject.instance().homePath()
+		if not self.project_folder:
+			self.project_folder = self.plugin_dir
+
+		config_file = os.path.join(self.project_folder, 'ficha_urbanistica.conf')
+		if not os.path.isfile(config_file):
+			return
+
+		try:
+			self.config = Config(config_file)
+		except IOError:
+			return
+
+		# Save and make, if they don't exist, the docs folders.
+		self.sector_folder = os.path.join(self.config.docs_folder, 'sectors')
+		self.classi_folder = os.path.join(self.config.docs_folder, 'classificacio')
+		self.ord_folder = os.path.join(self.config.docs_folder, 'ordenacions')
+
 		# Disconnect the server
 		self.cursor = None
 		self.conn = None
@@ -73,7 +82,7 @@ class FichaUrbanistica:
 			return
 
 		# Get the credentials
-		service_uri = getServiceUri(configuration.SERVICE)
+		service_uri = getServiceUri(self.config.service)
 
 		if not service_uri:
 			self.error(u"Hi ha algun error a la configuració del servei de la base de dades.")
@@ -121,7 +130,7 @@ class FichaUrbanistica:
 			return
 
 		feature = features[0]
-		id_index = feature.fieldNameIndex(configuration.ID_STR)
+		id_index = feature.fieldNameIndex(self.config.plot_id)
 
 		if id_index < 0:
 			return;
@@ -137,19 +146,19 @@ class FichaUrbanistica:
 		dialog.setFixedSize(dialog.size())
 
 		# Static links
-		dialog.ui.lblCondGenerals.setText(Const.LINK_COND.format(self.docs_folder))
+		dialog.ui.lblCondGenerals.setText(Const.LINK_COND.format(self.config.docs_folder))
 		dialog.ui.lblCondGenerals.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblDotacioAparc.setText(Const.LINK_DOT.format(self.docs_folder))
+		dialog.ui.lblDotacioAparc.setText(Const.LINK_DOT.format(self.config.docs_folder))
 		dialog.ui.lblDotacioAparc.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblRegulacioAparc.setText(Const.LINK_REG.format(self.docs_folder))
+		dialog.ui.lblRegulacioAparc.setText(Const.LINK_REG.format(self.config.docs_folder))
 		dialog.ui.lblRegulacioAparc.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblParamFinca.setText(Const.LINK_FINCA.format(self.docs_folder))
+		dialog.ui.lblParamFinca.setText(Const.LINK_FINCA.format(self.config.docs_folder))
 		dialog.ui.lblParamFinca.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblParamEdificacio.setText(Const.LINK_EDIF.format(self.docs_folder))
+		dialog.ui.lblParamEdificacio.setText(Const.LINK_EDIF.format(self.config.docs_folder))
 		dialog.ui.lblParamEdificacio.linkActivated.connect(self.webDialog)
 		
 
@@ -355,6 +364,37 @@ class FichaUrbanistica:
 
 
 
+class Config:
+	"""Class that loads and shows the configuration"""
+
+	def __init__(self, file):
+
+		with open(file) as f:
+			config_sample = f.read()
+
+		config = ConfigParser.RawConfigParser()
+		config.readfp(io.BytesIO(config_sample))
+
+		for service in config.sections():
+
+			if config.has_option(service, 'docs_folder'):
+				docs = config.get(service, 'docs_folder')
+				if os.path.isabs(docs):
+					self.docs_folder = docs
+				else:
+					self.docs_folder = os.path.join(os.path.dirname(file), docs)
+			else:
+				self.docs_folder = os.path.join(os.path.dirname(__file__), 'html')
+
+			if config.has_option(service, 'service'):
+				self.service = config.get(service, 'service')
+
+			if config.has_option(service, 'id_name'):
+				self.plot_id = config.get(service, 'id_name')
+			else:
+				self.plot_id = 'id'
+
+
 
 # Utilities
 
@@ -421,7 +461,7 @@ def getServiceUri(config_service):
 	pg_services =      get_pgservices_conf( os.path.join(this_folder, 'config', 'pg_service.conf')                )
 	pg_services = dict(get_pgservices_conf( os.path.expanduser('~/.pg_service.conf')                              ).items() + pg_services.items())
 	pg_services = dict(get_pgservices_conf( os.path.join(os.environ.get('PGSYSCONFDIR') or '', 'pg_service.conf') ).items() + pg_services.items())
-	pg_services = dict(get_pgservices_conf( os.environ.get('PGSERVICEFILE')                                       ).items() + pg_services.items())
+	pg_services = dict(get_pgservices_conf( os.environ.get('PGserviceFILE')                                       ).items() + pg_services.items())
 
 	if config_service:
 		return pg_services.get(config_service)
