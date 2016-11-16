@@ -10,6 +10,7 @@ from PyQt4 import QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+from qgis.gui import *
 
 from const import Const
 
@@ -363,9 +364,13 @@ class FichaUrbanistica:
 
 
 	def error(self, msg):
-		messageBox = QMessageBox(QMessageBox.Critical, tr("Error"), msg)
-		messageBox.setWindowIcon(self.icon)
-		messageBox.exec_()
+		# The QGis documentation recommends using the more user-friendly QGIS Message Bar
+		# instead of modal message boxes to show information to the user
+		self.iface.messageBar().pushMessage("Error", msg, level=QgsMessageBar.CRITICAL)
+
+		# messageBox = QMessageBox(QMessageBox.Critical, tr("Error"), msg)
+		# messageBox.setWindowIcon(self.icon)
+		# messageBox.exec_()
 
 
 
