@@ -101,12 +101,26 @@ class FichaUrbanistica:
 	def initGui(self):
 		"""Called when the gui must be generated."""
 
+		self.tool = FichaUrbanisticaTool(self.iface.mapCanvas())
+
 		# Add menu and toolbar entries (basically allows to activate it)
 		self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
-		QObject.connect(self.action, SIGNAL('triggered()'), self.run)
+		self.action.setCheckable(True)
+		QObject.connect(self.action, SIGNAL('triggered()'), self.activateTool)
 		self.iface.addToolBarIcon(self.action)
 		self.iface.addPluginToMenu(qu("Ficha urbanística"), self.action)
+		self.iface.mapCanvas().mapToolSet.connect(self.deactivateTool)
 
+
+	def activateTool(self):
+		"""Called when the plugin icon is toggled on"""
+		self.iface.mapCanvas().setMapTool(self.tool)
+		self.action.setChecked(True)
+
+
+	def deactivateTool(self):
+		"""Called when the plugin icon is toggled off"""
+		self.action.setChecked(False)
 
 
 	def unload(self):
@@ -404,6 +418,11 @@ class Config:
 			else:
 				self.plot_id = 'id'
 
+
+class FichaUrbanisticaTool(QgsMapTool):
+	def __init__(self, canvas):
+		super(QgsMapTool, self).__init__(canvas)
+		self.canvas = canvas
 
 
 # Utilities
