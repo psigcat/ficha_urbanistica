@@ -60,12 +60,11 @@ class FichaUrbanistica:
 			self.project_folder = self.plugin_dir
 
 		config_file = os.path.join(self.project_folder, 'ficha_urbanistica.conf')
-		if not os.path.isfile(config_file):
-			return
 
 		try:
 			self.config = Config(config_file)
 		except IOError:
+			self.error(u"No s'ha trobat el fitxer de configuració del plugin.")
 			return
 
 		# Save and make, if they don't exist, the docs folders.
