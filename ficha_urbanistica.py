@@ -117,6 +117,12 @@ class FichaUrbanistica:
 
 	def run(self):
 		"""Called when the plugin's icon is pressed."""
+
+		if not hasattr(self, 'config'):
+			self.projectChange()
+			# check if projectChange was successful
+			if not hasattr(self, 'config'):
+				return
 		
 		# Get the active layer (where the selected form is).
 		layer = self.iface.activeLayer()
