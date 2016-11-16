@@ -101,7 +101,7 @@ class FichaUrbanistica:
 	def initGui(self):
 		"""Called when the gui must be generated."""
 
-		self.tool = FichaUrbanisticaTool(self.iface.mapCanvas())
+		self.tool = FichaUrbanisticaTool(self.iface.mapCanvas(), self)
 
 		# Add menu and toolbar entries (basically allows to activate it)
 		self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
@@ -420,9 +420,24 @@ class Config:
 
 
 class FichaUrbanisticaTool(QgsMapTool):
-	def __init__(self, canvas):
+	def __init__(self, canvas, plugin):
 		super(QgsMapTool, self).__init__(canvas)
 		self.canvas = canvas
+		self.plugin = plugin
+
+	def canvasReleaseEvent(self, e):
+		layer = self.canvas.currentLayer()
+		if layer is None:
+			return
+
+		point = e.mapPoint()
+
+		radius = self.canvas.mapUnitsPerPixel()
+
+		# FIXME: It selects two features when clicking at an edge...
+		rect = QgsRectangle(point.x(), point.y(), point.x() + radius, point.y() + radius)
+		layer.selectByRect(rect)
+		self.plugin.run()
 
 
 # Utilities
