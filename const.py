@@ -5,11 +5,11 @@ class Const:
 	"""Constains all the constants used in the plugin."""
 	# Link labels value (it is formatted later on)
 	LINK_NORMATIVA = u"<a href='file:///{:s}'>Veure normativa</a>"
-	LINK_COND = u"<a href='{:s}condicions_generals.htm'>Condicions Generals</a>"
-	LINK_DOT = u"<a href='{:s}dotacio_aparcament.htm'>Dotació mínima d'aparcaments</a>"
-	LINK_REG = u"<a href='{:s}regulacio_aparcament.htm'>Regulació particular de l'ús d'aparcaments</a>"
-	LINK_FINCA = u"<a href='{:s}param_finca.htm'>Paràmetres Finca</a>"
-	LINK_EDIF = u"<a href='{:s}param_edificacio.htm'>Paràmetres Edificació</a>"
+	LINK_COND = u"<a href='{:s}/condicions_generals.htm'>Condicions Generals</a>"
+	LINK_DOT = u"<a href='{:s}/dotacio_aparcament.htm'>Dotació mínima d'aparcaments</a>"
+	LINK_REG = u"<a href='{:s}/regulacio_aparcament.htm'>Regulació particular de l'ús d'aparcaments</a>"
+	LINK_FINCA = u"<a href='{:s}/param_finca.htm'>Paràmetres Finca</a>"
+	LINK_EDIF = u"<a href='{:s}/param_edificacio.htm'>Paràmetres Edificació</a>"
 
 	# Query result columns 
 	REFCAT = 0
