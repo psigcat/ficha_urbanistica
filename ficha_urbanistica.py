@@ -50,7 +50,7 @@ class FichaUrbanistica:
 		filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
 		self.icon = QIcon(str(filename))
 
-		self.style_doc_path = os.path.join(self.plugin_dir, 'config/selected_style.qml')
+		self.style_doc_path = os.path.join(self.plugin_dir, 'config', 'selected_style.qml')
 
 		self.action = None
 
@@ -117,13 +117,6 @@ class FichaUrbanistica:
 
 	def activateTool(self):
 		"""Called when the plugin icon is toggled on"""
-
-		# Activate config layer
-		if self.config.layer_name:
-			registry = QgsMapLayerRegistry.instance()
-			layer = registry.mapLayersByName(self.config.layer_name)[0]
-			self.iface.setActiveLayer(layer)
-
 		self.iface.mapCanvas().setMapTool(self.tool)
 		self.action.setChecked(True)
 
@@ -447,6 +440,12 @@ class FichaUrbanisticaTool(QgsMapTool):
 		self.setCursor(Qt.PointingHandCursor)
 
 	def canvasReleaseEvent(self, e):
+		# Activate config layer
+		if self.plugin.config.layer_name:
+			registry = QgsMapLayerRegistry.instance()
+			layer = registry.mapLayersByName(self.plugin.config.layer_name)[0]
+			self.plugin.iface.setActiveLayer(layer)
+
 		layer = self.canvas.currentLayer()
 		if layer is None:
 			return
