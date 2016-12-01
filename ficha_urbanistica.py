@@ -50,7 +50,7 @@ class FichaUrbanistica:
 		filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
 		self.icon = QIcon(str(filename))
 
-		self.style_doc_path = os.path.join(self.plugin_dir, 'config', 'selected_style.qml')
+		self.style_doc_path = os.path.join(self.plugin_dir, 'config', 'selected_parcel.qml')
 
 		self.action = None
 
@@ -255,6 +255,7 @@ class FichaUrbanistica:
 			# Make temporary layer
 			vl = self.iface.addVectorLayer("Polygon?crs=epsg:25831&field=id:integer&index=yes", "temp_print_polygon", "memory")
 			vl.loadNamedStyle(self.style_doc_path)
+			vl.setName(u"Parcel·la seleccionada")
 			pr = vl.dataProvider()
 
 			fet = QgsFeature()
@@ -288,6 +289,11 @@ class FichaUrbanistica:
 				main_map = composition.getComposerItemById('Mapa principal')
 				centerMap(main_map, feature)
 
+				# Add temporal layer to composition
+				legend = composition.getComposerItemById('Llegenda')
+				legend_root = legend.modelV2().rootGroup()
+				legend_root.insertLayer(0, vl)
+
 				# Make PDF
 				filename = os.path.join(self.zones_folder, '{}.pdf'.format(info[Const.REFCAT]));
 				if composition.exportAsPDF(filename):
@@ -296,6 +302,7 @@ class FichaUrbanistica:
 					self.error(u"No s'ha pogut convertir a PDF.")
 
 				# Delete temporary layer
+				legend_root.removeLayer(vl)
 				QgsMapLayerRegistry.instance().removeMapLayers( [vl.id()] )
 
 				# Repaint again
