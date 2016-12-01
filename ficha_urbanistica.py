@@ -121,7 +121,6 @@ class FichaUrbanistica:
 		# Activate config layer
 		if self.config.layer_name:
 			registry = QgsMapLayerRegistry.instance()
-			QgsMessageLog.logMessage("Capa configuracio: " + self.config.layer_name)
 			layer = registry.mapLayersByName(self.config.layer_name)[0]
 			self.iface.setActiveLayer(layer)
 
