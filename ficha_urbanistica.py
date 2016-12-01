@@ -4,6 +4,7 @@
 import os
 import sys
 import io
+import codecs
 import ConfigParser
 import psycopg2
 from PyQt4 import QtCore
@@ -114,6 +115,14 @@ class FichaUrbanistica:
 
 	def activateTool(self):
 		"""Called when the plugin icon is toggled on"""
+
+		# Activate config layer
+		if self.config.layer_name:
+			registry = QgsMapLayerRegistry.instance()
+			QgsMessageLog.logMessage("Capa configuracio: " + self.config.layer_name)
+			layer = registry.mapLayersByName(self.config.layer_name)[0]
+			self.iface.setActiveLayer(layer)
+
 		self.iface.mapCanvas().setMapTool(self.tool)
 		self.action.setChecked(True)
 
@@ -393,11 +402,8 @@ class Config:
 
 	def __init__(self, file):
 
-		with open(file) as f:
-			config_sample = f.read()
-
 		config = ConfigParser.RawConfigParser()
-		config.readfp(io.BytesIO(config_sample))
+		config.readfp(codecs.open(file, 'r', 'utf8'))
 
 		for service in config.sections():
 
@@ -417,6 +423,11 @@ class Config:
 				self.plot_id = config.get(service, 'id_name')
 			else:
 				self.plot_id = 'id'
+
+			if config.has_option(service, 'layer_name'):
+				self.layer_name = config.get(service, 'layer_name')
+			else:
+				self.layer_name = None
 
 
 class FichaUrbanisticaTool(QgsMapTool):
