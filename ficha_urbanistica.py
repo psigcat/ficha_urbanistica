@@ -424,6 +424,7 @@ class FichaUrbanisticaTool(QgsMapTool):
 		super(QgsMapTool, self).__init__(canvas)
 		self.canvas = canvas
 		self.plugin = plugin
+		self.setCursor(Qt.PointingHandCursor)
 
 	def canvasReleaseEvent(self, e):
 		layer = self.canvas.currentLayer()
