@@ -54,6 +54,8 @@ class FichaUrbanistica:
 
 		self.action = None
 
+		self.dialog = None
+
 		self.projectChange()
 
 	def projectChange(self):
@@ -173,40 +175,42 @@ class FichaUrbanistica:
 		info = self.cursor.fetchone()
 
 		# Make dialog and set its atributes
-		dialog = self.initDialog(Ui_Form)
-		dialog.setFixedSize(dialog.size())
+		if self.dialog:
+			self.dialog.close()
+		self.dialog = self.initDialog(Ui_Form)
+		self.dialog.setFixedSize(self.dialog.size())
 
 		# Static links
-		dialog.ui.lblCondGenerals.setText(Const.LINK_COND.format(self.config.docs_folder))
-		dialog.ui.lblCondGenerals.linkActivated.connect(self.webDialog)
+		self.dialog.ui.lblCondGenerals.setText(Const.LINK_COND.format(self.config.docs_folder))
+		self.dialog.ui.lblCondGenerals.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblDotacioAparc.setText(Const.LINK_DOT.format(self.config.docs_folder))
-		dialog.ui.lblDotacioAparc.linkActivated.connect(self.webDialog)
+		self.dialog.ui.lblDotacioAparc.setText(Const.LINK_DOT.format(self.config.docs_folder))
+		self.dialog.ui.lblDotacioAparc.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblRegulacioAparc.setText(Const.LINK_REG.format(self.config.docs_folder))
-		dialog.ui.lblRegulacioAparc.linkActivated.connect(self.webDialog)
+		self.dialog.ui.lblRegulacioAparc.setText(Const.LINK_REG.format(self.config.docs_folder))
+		self.dialog.ui.lblRegulacioAparc.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblParamFinca.setText(Const.LINK_FINCA.format(self.config.docs_folder))
-		dialog.ui.lblParamFinca.linkActivated.connect(self.webDialog)
+		self.dialog.ui.lblParamFinca.setText(Const.LINK_FINCA.format(self.config.docs_folder))
+		self.dialog.ui.lblParamFinca.linkActivated.connect(self.webDialog)
 		
-		dialog.ui.lblParamEdificacio.setText(Const.LINK_EDIF.format(self.config.docs_folder))
-		dialog.ui.lblParamEdificacio.linkActivated.connect(self.webDialog)
+		self.dialog.ui.lblParamEdificacio.setText(Const.LINK_EDIF.format(self.config.docs_folder))
+		self.dialog.ui.lblParamEdificacio.linkActivated.connect(self.webDialog)
 		
 
 
 		# Show data
-		dialog.ui.refcat.setText(u'{}'.format( info[Const.REFCAT] ))
-		dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
-		dialog.ui.txtAdreca.setText(u'{}'.format( info[Const.ADRECA] ))
+		self.dialog.ui.refcat.setText(u'{}'.format( info[Const.REFCAT] ))
+		self.dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
+		self.dialog.ui.txtAdreca.setText(u'{}'.format( info[Const.ADRECA] ))
 
 		if info[Const.CODI_SECTOR] is not None: # It may not be part of any sector
-			dialog.ui.txtSector.setText(u'{} - {}'.format( info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR] ))
-			dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[Const.CODI_SECTOR])))
+			self.dialog.ui.txtSector.setText(u'{} - {}'.format( info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR] ))
+			self.dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[Const.CODI_SECTOR])))
 		else:
-			dialog.ui.lblSector.setHidden(True)
+			self.dialog.ui.lblSector.setHidden(True)
 
-		dialog.ui.txtClass.setText(u'{} - {}'.format( info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI] ))
-		dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[Const.CODI_CLASSI] )))
+		self.dialog.ui.txtClass.setText(u'{} - {}'.format( info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI] ))
+		self.dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[Const.CODI_CLASSI] )))
 
 
 		codes = info[Const.CODI_ZONES]
@@ -214,43 +218,43 @@ class FichaUrbanistica:
 		general_codes = info[Const.CODI_GENERAL_ZONES]
 
 		if len(codes) >= 1:
-			dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
-			dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
-			dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(general_codes[0])))
-			dialog.ui.lblOrd_1.linkActivated.connect(self.webDialog)
+			self.dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
+			self.dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
+			self.dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(general_codes[0])))
+			self.dialog.ui.lblOrd_1.linkActivated.connect(self.webDialog)
 
 
 		if len(codes) >= 2:
-			dialog.ui.txtClau_2.setText(u'{}'.format(str(codes[1])))
-			dialog.ui.txtPer_2.setText(u'{:02.2f}'.format(percents[1]))
-			dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(general_codes[1])))
-			dialog.ui.lblOrd_2.linkActivated.connect(self.webDialog)
+			self.dialog.ui.txtClau_2.setText(u'{}'.format(str(codes[1])))
+			self.dialog.ui.txtPer_2.setText(u'{:02.2f}'.format(percents[1]))
+			self.dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(general_codes[1])))
+			self.dialog.ui.lblOrd_2.linkActivated.connect(self.webDialog)
 		else:
-			dialog.ui.txtClau_2.setHidden(True)
-			dialog.ui.txtPer_2.setHidden(True)
-			dialog.ui.lblOrd_2.setHidden(True)
+			self.dialog.ui.txtClau_2.setHidden(True)
+			self.dialog.ui.txtPer_2.setHidden(True)
+			self.dialog.ui.lblOrd_2.setHidden(True)
 
 
 		if len(codes) >= 3:
-			dialog.ui.txtClau_3.setText(u'{}'.format(str(codes[2])))
-			dialog.ui.txtPer_3.setText(u'{:02.2f}'.format(percents[2]))
-			dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(general_codes[2])))
-			dialog.ui.lblOrd_3.linkActivated.connect(self.webDialog)
+			self.dialog.ui.txtClau_3.setText(u'{}'.format(str(codes[2])))
+			self.dialog.ui.txtPer_3.setText(u'{:02.2f}'.format(percents[2]))
+			self.dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(general_codes[2])))
+			self.dialog.ui.lblOrd_3.linkActivated.connect(self.webDialog)
 		else:
-			dialog.ui.txtClau_3.setHidden(True)
-			dialog.ui.txtPer_3.setHidden(True)
-			dialog.ui.lblOrd_3.setHidden(True)
+			self.dialog.ui.txtClau_3.setHidden(True)
+			self.dialog.ui.txtPer_3.setHidden(True)
+			self.dialog.ui.lblOrd_3.setHidden(True)
 
 
 		if len(codes) >= 4:
-			dialog.ui.txtClau_4.setText(u'{}'.format(str(codes[3])))
-			dialog.ui.txtPer_4.setText(u'{:02.2f}'.format(percents[3]))
-			dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(general_codes[3])))
-			dialog.ui.lblOrd_4.linkActivated.connect(self.webDialog)
+			self.dialog.ui.txtClau_4.setText(u'{}'.format(str(codes[3])))
+			self.dialog.ui.txtPer_4.setText(u'{:02.2f}'.format(percents[3]))
+			self.dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(general_codes[3])))
+			self.dialog.ui.lblOrd_4.linkActivated.connect(self.webDialog)
 		else:
-			dialog.ui.txtClau_4.setHidden(True)
-			dialog.ui.txtPer_4.setHidden(True)
-			dialog.ui.lblOrd_4.setHidden(True)
+			self.dialog.ui.txtClau_4.setHidden(True)
+			self.dialog.ui.txtPer_4.setHidden(True)
+			self.dialog.ui.lblOrd_4.setHidden(True)
 
 
 
@@ -311,13 +315,17 @@ class FichaUrbanistica:
 		def makeShowZonesPdf(): # TODO
 			pass
 
+		def destroyDialog():
+			self.dialog = None
+
 		# Connect the click signal to the functions
-		dialog.ui.lblClass.linkActivated.connect(self.webDialog)
-		dialog.ui.btnParcelaPdf.clicked.connect(makeShowUbicacioPdf)
-		dialog.ui.btnClauPdf_1.clicked.connect(makeShowZonesPdf)
+		self.dialog.ui.lblClass.linkActivated.connect(self.webDialog)
+		self.dialog.ui.btnParcelaPdf.clicked.connect(makeShowUbicacioPdf)
+		self.dialog.ui.btnClauPdf_1.clicked.connect(makeShowZonesPdf)
+		self.dialog.destroyed.connect(destroyDialog)
 
 		# SHow the dialog (execute it)
-		dialog.exec_()
+		self.dialog.exec_()
 
 
 
@@ -448,7 +456,6 @@ class FichaUrbanisticaTool(QgsMapTool):
 
 		radius = self.canvas.mapUnitsPerPixel()
 
-		# FIXME: It selects two features when clicking at an edge...
 		rect = QgsRectangle(point.x(), point.y(), point.x() + radius, point.y() + radius)
 		layer.selectByRect(rect)
 		self.plugin.run()
