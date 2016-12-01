@@ -56,6 +56,10 @@ class FichaUrbanistica:
 		self.projectChange()
 
 	def projectChange(self):
+		# Check if there is an actual project
+		if not QgsProject.instance().title():
+			return
+		
 		self.project_folder = QgsProject.instance().homePath()
 		if not self.project_folder:
 			self.project_folder = self.plugin_dir
@@ -76,10 +80,6 @@ class FichaUrbanistica:
 		# Disconnect the server
 		self.cursor = None
 		self.conn = None
-
-		# Check if there is an actual project
-		if not QgsProject.instance().title():
-			return
 
 		# Get the credentials
 		service_uri = getServiceUri(self.config.service)
