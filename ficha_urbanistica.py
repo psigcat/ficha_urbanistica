@@ -149,7 +149,7 @@ class FichaUrbanistica:
 
 		# single feature
 		features = layer.selectedFeatures()
-		if len(features) < 0:
+		if len(features) < 1:
 			return
 		elif len(features) > 1:
 			layer.setSelectedFeatures([features[0].id()])
