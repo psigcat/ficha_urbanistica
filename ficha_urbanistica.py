@@ -155,8 +155,10 @@ class FichaUrbanistica:
 
 		# single feature
 		features = layer.selectedFeatures()
-		if len(features) != 1:
+		if len(features) < 0:
 			return
+		elif len(features) > 1:
+			layer.setSelectedFeatures([features[0].id()])
 
 		feature = features[0]
 		id_index = feature.fieldNameIndex(self.config.plot_id)
