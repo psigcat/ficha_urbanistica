@@ -209,6 +209,8 @@ class FichaUrbanistica:
 		percents = info[Const.PERCENT_ZONES]
 		general_codes = info[Const.CODI_GENERAL_ZONES]
 
+		QgsMessageLog.logMessage(str(general_codes))
+
 		if len(codes) >= 1:
 			self.dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
 			self.dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
@@ -311,8 +313,20 @@ class FichaUrbanistica:
 			self.iface.mapCanvas().mapCanvasRefreshed.connect(refreshed)
 			self.iface.mapCanvas().refresh()
 
-		def makeShowZonesPdf(): # TODO
-			pass
+		def makeShowZonesPdf():
+			composition = None
+			for item in self.iface.activeComposers():
+				if item.composerWindow().windowTitle() == Const.PDF_ZONES:
+					composition = item.composition()
+					break
+			if composition is None:
+				return
+
+			filename = os.path.join(self.zones_folder, 'a.pdf')
+			if composition.exportAsPDF(filename):
+				openFile(filename)
+			else:
+				self.error(u"No s'ha pogut convertir a PDF.")
 
 		def destroyDialog():
 			self.dialog = None
