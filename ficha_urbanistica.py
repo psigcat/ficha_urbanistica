@@ -443,7 +443,7 @@ class FichaUrbanisticaTool(QgsMapTool):
 		super(QgsMapTool, self).__init__(canvas)
 		self.canvas = canvas
 		self.plugin = plugin
-		self.setCursor(Qt.PointingHandCursor)
+		self.setCursor(QCursor(QPixmap(os.path.join(plugin.plugin_dir, 'cursor.png')), 1, 1))
 
 	def canvasReleaseEvent(self, e):
 		# Activate config layer
