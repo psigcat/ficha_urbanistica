@@ -209,46 +209,25 @@ class FichaUrbanistica:
 		percents = info[Const.PERCENT_ZONES]
 		general_codes = info[Const.CODI_GENERAL_ZONES]
 
-		QgsMessageLog.logMessage(str(general_codes))
+		QgsMessageLog.logMessage(str(info))
 
-		if len(codes) >= 1:
-			self.dialog.ui.txtClau_1.setText(u'{}'.format(str(codes[0])))
-			self.dialog.ui.txtPer_1.setText(u'{:02.2f}'.format(percents[0]))
-			self.dialog.ui.lblOrd_1.setText(u'{}'.format(self.ordLink(general_codes[0])))
-			self.dialog.ui.lblOrd_1.linkActivated.connect(self.webDialog)
-
-
-		if len(codes) >= 2:
-			self.dialog.ui.txtClau_2.setText(u'{}'.format(str(codes[1])))
-			self.dialog.ui.txtPer_2.setText(u'{:02.2f}'.format(percents[1]))
-			self.dialog.ui.lblOrd_2.setText(u'{}'.format(self.ordLink(general_codes[1])))
-			self.dialog.ui.lblOrd_2.linkActivated.connect(self.webDialog)
-		else:
-			self.dialog.ui.txtClau_2.setHidden(True)
-			self.dialog.ui.txtPer_2.setHidden(True)
-			self.dialog.ui.lblOrd_2.setHidden(True)
-
-
-		if len(codes) >= 3:
-			self.dialog.ui.txtClau_3.setText(u'{}'.format(str(codes[2])))
-			self.dialog.ui.txtPer_3.setText(u'{:02.2f}'.format(percents[2]))
-			self.dialog.ui.lblOrd_3.setText(u'{}'.format(self.ordLink(general_codes[2])))
-			self.dialog.ui.lblOrd_3.linkActivated.connect(self.webDialog)
-		else:
-			self.dialog.ui.txtClau_3.setHidden(True)
-			self.dialog.ui.txtPer_3.setHidden(True)
-			self.dialog.ui.lblOrd_3.setHidden(True)
-
-
-		if len(codes) >= 4:
-			self.dialog.ui.txtClau_4.setText(u'{}'.format(str(codes[3])))
-			self.dialog.ui.txtPer_4.setText(u'{:02.2f}'.format(percents[3]))
-			self.dialog.ui.lblOrd_4.setText(u'{}'.format(self.ordLink(general_codes[3])))
-			self.dialog.ui.lblOrd_4.linkActivated.connect(self.webDialog)
-		else:
-			self.dialog.ui.txtClau_4.setHidden(True)
-			self.dialog.ui.txtPer_4.setHidden(True)
-			self.dialog.ui.lblOrd_4.setHidden(True)
+		for i in range(0, 4):
+			txtClau = getattr(self.dialog.ui, 'txtClau_{}'.format(i+1))
+			txtPer = getattr(self.dialog.ui, 'txtPer_{}'.format(i+1))
+			lblOrd = getattr(self.dialog.ui, 'lblOrd_{}'.format(i+1))
+			try:
+				txtClau.setText(u'{}'.format(codes[i]))
+			except IndexError:
+				txtClau.setHidden(True)
+			try:
+				txtPer.setText(u'{:02.2f}'.format(percents[i]))
+			except IndexError:
+				txtPer.setHidden(True)
+			try:
+				lblOrd.setText(u'{}'.format(self.ordLink(general_codes[i])))
+				lblOrd.linkActivated.connect(self.webDialog)
+			except IndexError:
+				lblOrd.setHidden(True)
 
 
 
@@ -408,7 +387,11 @@ class FichaUrbanistica:
 
 	def ordLink(self, code):
 		filename = '{:s}.htm'.format(code)
-		return Const.LINK_NORMATIVA.format(os.path.join(self.ord_folder, filename))
+		filepath = os.path.join(self.ord_folder, filename)
+		if os.path.isfile(filepath):
+			return Const.LINK_ORDENACIO.format(filepath, code)
+		else:
+			return code
 
 
 	def error(self, msg):

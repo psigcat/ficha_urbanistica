@@ -5,6 +5,7 @@ class Const:
 	"""Constains all the constants used in the plugin."""
 	# Link labels value (it is formatted later on)
 	LINK_NORMATIVA = u"<a href='file:///{:s}'>Veure normativa</a>"
+	LINK_ORDENACIO = u"<a href='file:///{:s}'>{:s}</a>"
 	LINK_COND = u"<a href='{:s}/condicions_generals.htm'>Condicions Generals</a>"
 	LINK_DOT = u"<a href='{:s}/dotacio_aparcament.htm'>Dotació mínima d'aparcaments</a>"
 	LINK_REG = u"<a href='{:s}/regulacio_aparcament.htm'>Regulació particular de l'ús d'aparcaments</a>"
