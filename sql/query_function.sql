@@ -89,6 +89,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
           SELECT COALESCE(cod_ord, codi, '<error>')
           FROM data.qualificacio_general, _2_
           WHERE qualificacio_general.id = _2_.codi
+          ORDER BY _2_.percent DESC, _2_.codi ASC
         ) AS codi_general_zones
       LIMIT 1
     ) AS _zones ON TRUE
