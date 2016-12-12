@@ -196,6 +196,7 @@ class FichaUrbanistica:
 		if info[Const.CODI_SECTOR] is not None: # It may not be part of any sector
 			self.dialog.ui.txtSector.setText(u'{} - {}'.format( info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR] ))
 			self.dialog.ui.lblSector.setText(self.sectorLink('{}'.format(info[Const.CODI_SECTOR])))
+			self.dialog.ui.lblSector.linkActivated.connect(self.webDialog)
 		else:
 			self.dialog.ui.lblSector.setHidden(True)
 
