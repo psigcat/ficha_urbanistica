@@ -190,7 +190,7 @@ class FichaUrbanistica:
 		
 		# Show data
 		self.dialog.ui.refcat.setText(u'{}'.format( info[Const.REFCAT] ))
-		self.dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
+		self.dialog.ui.area.setText((u'{}'.format( round(info[Const.AREA], 1) )).rstrip('0').rstrip('.'))
 		self.dialog.ui.txtAdreca.setText(u'{}'.format( info[Const.ADRECA] ))
 
 		if info[Const.CODI_SECTOR] is not None: # It may not be part of any sector
