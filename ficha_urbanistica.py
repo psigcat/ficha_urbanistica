@@ -271,7 +271,7 @@ class FichaUrbanistica:
 				legend_root.insertLayer(0, vl)
 
 				# Make PDF
-				filename = os.path.join(self.zones_folder, '{}.pdf'.format(info[Const.REFCAT]));
+				filename = os.path.join(self.zones_folder, '{}_ubicacio.pdf'.format(info[Const.REFCAT]));
 				if composition.exportAsPDF(filename):
 					openFile(filename)
 				else:
@@ -299,7 +299,7 @@ class FichaUrbanistica:
 			if composition is None:
 				return
 
-			filename = os.path.join(self.zones_folder, 'a.pdf')
+			filename = os.path.join(self.zones_folder, '{}_zones.pdf'.format(info[Const.REFCAT]))
 			printer = QPrinter()
 			composition.beginPrintAsPDF(printer, filename)
 			composition.beginPrint(printer, False)
