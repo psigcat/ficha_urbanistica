@@ -163,7 +163,7 @@ class FichaUrbanistica:
 
 		# Query the necesary information
 		#self.cursor.fetchall(); # ignore any residual information (should never do anything)
-		self.cursor.execute(Const.MAIN_QUERY, [feature[id_index]])
+		self.cursor.execute(Const.MAIN_QUERY, [int(feature[id_index])])
 		info = self.cursor.fetchone()
 
 		# Make dialog and set its atributes
@@ -288,7 +288,7 @@ class FichaUrbanistica:
 			self.iface.mapCanvas().refresh()
 
 		def makeShowZonesPdf():
-			self.cursor.execute(Const.ZONES_QUERY, [feature[id_index]])
+			self.cursor.execute(Const.ZONES_QUERY, [int(feature[id_index])])
 			rows = (row for row in self.cursor.fetchall() if row[Const.ZONES_COLUMNS.index('per_int')] >= 3)
 
 			composition = None
