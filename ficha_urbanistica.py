@@ -188,8 +188,6 @@ class FichaUrbanistica:
 		self.dialog.ui.lblParamEdificacio.setText(Const.LINK_EDIF.format(self.config.docs_folder))
 		self.dialog.ui.lblParamEdificacio.linkActivated.connect(self.webDialog)
 		
-
-
 		# Show data
 		self.dialog.ui.refcat.setText(u'{}'.format( info[Const.REFCAT] ))
 		self.dialog.ui.area.setText(u'{}'.format( info[Const.AREA] ))
@@ -204,12 +202,9 @@ class FichaUrbanistica:
 		self.dialog.ui.txtClass.setText(u'{} - {}'.format( info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI] ))
 		self.dialog.ui.lblClass.setText(self.classiLink('{}'.format( info[Const.CODI_CLASSI] )))
 
-
 		codes = info[Const.CODI_ZONES]
 		percents = info[Const.PERCENT_ZONES]
 		general_codes = info[Const.CODI_GENERAL_ZONES]
-
-		QgsMessageLog.logMessage(str(info))
 
 		for i in range(0, 4):
 			txtClau = getattr(self.dialog.ui, 'txtClau_{}'.format(i+1))
@@ -293,6 +288,9 @@ class FichaUrbanistica:
 			self.iface.mapCanvas().refresh()
 
 		def makeShowZonesPdf():
+			self.cursor.execute(Const.ZONES_QUERY, [feature[id_index]])
+			rows = (row for row in self.cursor.fetchall() if row[Const.ZONES_COLUMNS.index('per_int')] >= 3)
+
 			composition = None
 			for item in self.iface.activeComposers():
 				if item.composerWindow().windowTitle() == Const.PDF_ZONES:
@@ -302,10 +300,25 @@ class FichaUrbanistica:
 				return
 
 			filename = os.path.join(self.zones_folder, 'a.pdf')
-			if composition.exportAsPDF(filename):
-				openFile(filename)
-			else:
-				self.error(u"No s'ha pogut convertir a PDF.")
+			printer = QPrinter()
+			composition.beginPrintAsPDF(printer, filename)
+			composition.beginPrint(printer, False)
+			painter = QPainter()
+			painter.begin(printer)
+
+			for data in rows:
+				for i, column in enumerate(Const.ZONES_COLUMNS):
+					QgsExpressionContextUtils.setProjectVariable(column, data[i])
+				if info[Const.CODI_SECTOR] is not None:
+					QgsExpressionContextUtils.setProjectVariable('sec_descripcio', u'{} - {}'.format( info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR] ))
+				else:
+					QgsExpressionContextUtils.setProjectVariable('sec_descripcio', None)
+				QgsExpressionContextUtils.setProjectVariable('cla_descripcio', u'{} - {}'.format( info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI] ))
+				composition.refreshItems()
+				composition.doPrint(printer, painter)
+
+			painter.end()
+			openFile(filename)
 
 		def destroyDialog():
 			self.dialog = None

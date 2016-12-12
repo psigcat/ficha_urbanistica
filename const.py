@@ -30,4 +30,7 @@ class Const:
 
 	# Query the infrmation from the database
 	MAIN_QUERY = 'SELECT * FROM data.ficha_urbanistica(%s);'
-	QUALI_QUERY = 'SELECT * FROM qualificacio_general WHERE id = %s;'
+
+	# Zones query
+	ZONES_QUERY = 'SELECT * FROM data.ficha_urbanistica_zones(%s);'
+	ZONES_COLUMNS = ['qua_codi', 'qua_descripcio', 'area_int', 'per_int', 'qg_tipus', 'qg_subzona', 'qg_definicio', 'tord_codi', 'tord_descripcio', 'hab_unifamiliar', 'hab_plurifamiliar', 'hab_rural', 'res_especial', 'res_mobil', 'hoteler', 'com_petit', 'com_mitja', 'com_gran', 'oficines_serveis', 'restauracio', 'recreatiu', 'magatzem', 'industrial_1', 'industrial_2', 'industrial_3', 'industrial_4', 'industrial_5', 'taller_reparacio', 'educatiu', 'sanitari', 'assistencial', 'cultural', 'associatiu', 'esportiu', 'serveis_publics', 'serveis_tecnics', 'serveis_ambientals', 'serveis_radio', 'aparcament', 'estacions_servei', 'agricola', 'ramader', 'forestal', 'lleure', 'ecologic', 'fondaria_edif', 'edificabilitat', 'ocupacio', 'densitat_hab', 'vol_max_edif', 'fondaria_edif_pb', 'pb', 'alcada', 'punt_aplic', 'sep_min', 'constr_aux_alcada', 'constr_auxo_cupacio', 'tanques', 'nplantes', 'alcada_lliure', 'entresol_pb', 'sotacoberta', 'pendent', 'terrasses', 'elem_sort', 'cossos_sort', 'cossos_annexes', 'porxos', 'tract_facana', 'comp_facana', 'prop_obertura', 'material_facana', 'material_coberta', 'fusteria', 'espai_lliure', 'altell', 'altres', 'front_min', 'parce_min', 'prof_min']
