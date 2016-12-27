@@ -2,12 +2,12 @@
 # Mandatory items:
 
 [general]
-name=Crea ficha urbanistica
+name=Fitxa Urbanística
 qgisMinimumVersion=2.12
-description=Este plugin sirve para crear una ficha urbanistica al clicar sobre una parcela.
-about=Este plugin crea una ficha urbanistica para una parcela mostrando datos urbanisticos, clasificacion del suelo, sectores o ambitos a desarrollar, zonificacion y condiciones de edificabilidad. Se muestra un resumen en un formulario y se crean 2 PDF con datos de la parcela y condiciones de edificabilidad y usus admitidos.
-version=0.1
-author=Marti Angelats, David Erill, Carlos Lopez (psig.es)
+description=Aquest plugin serveix per crear una fitxa urbanística al clicar una parcel·la.
+about=Aquest plugin crea una fitxa urbanística per una parcel·la mostrant dades urbanístiques, classificació del sòl, sectors o àmbits a desenvolupar, zonificació i condicions d'edificabilitat. Es mostra un resum en un formulari i es creen 2 PDF amb dades de la parcela i condicions d'edificiabilitat i usos admesos.
+version=0.2
+author=Abel Toy, Martí Angelats, David Erill, Carlos Lopez (psig.es)
 email=carlos.lopez@psig.es
 
 

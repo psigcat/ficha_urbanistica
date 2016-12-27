@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Main file of the project ficha_urbanistica. This contains the main class as well as all the importan work."""
+"""Main file of the project ficha_urbanistica. This contains the main class as well as all the important work."""
 
 import codecs
 import ConfigParser
@@ -101,7 +101,7 @@ class FichaUrbanistica:
         self.tool = FichaUrbanisticaTool(self.iface.mapCanvas(), self)
 
         # Add menu and toolbar entries (basically allows to activate it)
-        self.action = QAction(self.icon, tr("Ficha urbanística"), self.iface.mainWindow())
+        self.action = QAction(self.icon, u"Fitxa urbanística", self.iface.mainWindow())
         self.action.setCheckable(True)
         QObject.connect(self.action, SIGNAL('triggered()'), self.activateTool)
         self.iface.addToolBarIcon(self.action)

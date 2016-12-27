@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- ficha_urbanistica - A QGIS plugin that creates GML files of plots for the spainish catastre
+ ficha_urbanistica - A QGIS plugin that creates GML files of plots for the
+                     spanish register
                              -------------------
         begin                : 2016-09-19
-        copyright            : (C) 2016 by Martí Angelats
+        copyright            : (C) 2016 by Abel Toy, Martí Angelats
         email                : martiangelats@hotmail.com
         git sha              : $Format:%H$
  ***************************************************************************/
