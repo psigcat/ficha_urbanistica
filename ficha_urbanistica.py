@@ -3,6 +3,7 @@
 
 import codecs
 import ConfigParser
+import errno
 import io
 import os
 import psycopg2
@@ -32,16 +33,6 @@ class FichaUrbanistica:
 
         self.plugin_dir = os.path.dirname(__file__)
         self.pluginName = os.path.basename(self.plugin_dir)
-
-        # Save, make and empty the folders for the resulting PDF.
-        reports_path = os.path.join(self.plugin_dir, 'reports')
-        self.ubicacio_folder = os.path.join(reports_path, 'ubicacio')
-        self.zones_folder = os.path.join(reports_path, 'zones')
-        createFolder(reports_path)
-        createFolder(self.ubicacio_folder)
-        emptyFolder(self.ubicacio_folder)
-        createFolder(self.zones_folder)
-        emptyFolder(self.zones_folder)
 
         self.settings = QSettings("PSIG", "ficha_urbanistica")
 
@@ -73,6 +64,13 @@ class FichaUrbanistica:
         except IOError:
             self.error(u"No s'ha trobat el fitxer de configuració del plugin.")
             return
+
+        self.reports_folder = os.path.join(self.project_folder, 'informes')
+        try:
+            os.makedirs(self.reports_folder)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
 
         # Save and make, if they don't exist, the docs folders.
         self.sector_folder = os.path.join(self.config.docs_folder, 'sectors')
@@ -259,7 +257,7 @@ class FichaUrbanistica:
                 legend_root.insertLayer(0, vl)
 
                 # Make PDF
-                filename = os.path.join(self.zones_folder, '{}_ubicacio.pdf'.format(info[Const.REFCAT]))
+                filename = os.path.join(self.reports_folder, '{}_ubicacio.pdf'.format(info[Const.REFCAT]))
                 if composition.exportAsPDF(filename):
                     openFile(filename)
                 else:
@@ -287,7 +285,7 @@ class FichaUrbanistica:
             if composition is None:
                 return
 
-            filename = os.path.join(self.zones_folder, '{}_zones.pdf'.format(info[Const.REFCAT]))
+            filename = os.path.join(self.reports_folder, '{}_zones.pdf'.format(info[Const.REFCAT]))
             printer = QPrinter()
             composition.beginPrintAsPDF(printer, filename)
             composition.beginPrint(printer, False)
@@ -462,18 +460,6 @@ class FichaUrbanisticaTool(QgsMapTool):
 
 
 # Utilities
-
-def createFolder(folder):
-    """Makes a folder unless it does already exist."""
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-
-def emptyFolder(folder):
-    """Removes all the files and subfolders in a folder."""
-    for f in os.listdir(folder):
-        os.remove(os.path.join(folder, f))
-
 
 def openFile(path):
     """Opens a file with the default application."""
