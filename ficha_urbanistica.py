@@ -292,7 +292,12 @@ class FichaUrbanistica:
             painter = QPainter()
             painter.begin(printer)
 
+            first = True
             for data in rows:
+                if first:
+                    first = False
+                else:
+                    printer.newPage()
                 for i, column in enumerate(Const.ZONES_COLUMNS):
                     QgsExpressionContextUtils.setProjectVariable(column, data[i])
                 if info[Const.CODI_SECTOR] is not None:
