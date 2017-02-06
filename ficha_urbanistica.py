@@ -325,8 +325,6 @@ class FichaUrbanistica:
         self.dialog.exec_()
 
     def webDialog(self, url):
-        QgsMessageLog.logMessage("Opened url: " + url)
-
         dialog = self.initDialog(Ui_DocsView, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowMaximizeButtonHint)
         dialog.ui.webView.setUrl(QUrl(url))
 
