@@ -194,6 +194,7 @@ class FichaUrbanistica:
         codes = info[Const.CODI_ZONES]
         percents = info[Const.PERCENT_ZONES]
         general_codes = info[Const.CODI_GENERAL_ZONES]
+        general_desc = info[Const.DESC_GENERAL_ZONES]
 
         for i in range(0, 4):
             txtClau = getattr(self.dialog.ui, 'txtClau_{}'.format(i + 1))
@@ -208,7 +209,7 @@ class FichaUrbanistica:
             except IndexError:
                 txtPer.setHidden(True)
             try:
-                lblOrd.setText(u'{}'.format(self.ordLink(general_codes[i])))
+                lblOrd.setText(self.ordLink(general_codes[i], general_desc[i]))
                 lblOrd.linkActivated.connect(self.webDialog)
             except IndexError:
                 lblOrd.setHidden(True)
@@ -386,13 +387,13 @@ class FichaUrbanistica:
         filename = '{:s}.htm'.format(id)
         return Const.LINK_NORMATIVA.format(os.path.join(self.classi_folder, filename))
 
-    def ordLink(self, code):
+    def ordLink(self, code, description):
         filename = '{:s}.htm'.format(code)
         filepath = os.path.join(self.ord_folder, filename)
         if os.path.isfile(filepath):
-            return Const.LINK_ORDENACIO.format(filepath, code)
+            return Const.LINK_ORDENACIO.format(filepath, description.decode('utf8'))
         else:
-            return code
+            return description.decode('utf8')
 
     def error(self, msg):
         # The QGis documentation recommends using the more user-friendly QGIS Message Bar

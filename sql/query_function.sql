@@ -8,6 +8,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
   codi_zones character varying(10)[],
   percent_zones double precision[],
   codi_general_zones character varying(10)[],
+  desc_general_zones character varying[],
   codi_sector text,
   descr_sector text
 ) AS $$
@@ -36,6 +37,7 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
     codi_zones,
     percent_zones,
     codi_general_zones,
+    desc_general_zones,
     _sector.codi AS codi_sector,
     _sector.descr AS descr_sector
 
@@ -90,7 +92,13 @@ CREATE OR REPLACE FUNCTION data.ficha_urbanistica(int) RETURNS TABLE(
           FROM data.qualificacio_general, _2_
           WHERE qualificacio_general.id = _2_.codi
           ORDER BY _2_.percent DESC, _2_.codi ASC
-        ) AS codi_general_zones
+        ) AS codi_general_zones,
+        ARRAY(
+          SELECT desc_qualif
+          FROM data.qualificacio_general, _2_
+          WHERE qualificacio_general.id = _2_.codi
+          ORDER BY _2_.percent DESC, _2_.codi ASC
+        ) AS desc_general_zones
       LIMIT 1
     ) AS _zones ON TRUE
 
