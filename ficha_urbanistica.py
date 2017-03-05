@@ -59,10 +59,13 @@ class FichaUrbanistica:
 
         config_file = os.path.join(self.project_folder, 'ficha_urbanistica.conf')
 
+        self.action.setEnabled(True)
+        self.action.setToolTip(u"Fitxa urbanística")
         try:
             self.config = Config(config_file)
         except IOError:
-            self.error(u"No s'ha trobat el fitxer de configuració del plugin.")
+            self.action.setEnabled(False)
+            self.action.setToolTip(u"Fitxa urbanística - Configuració no trobada")
             return
 
         self.reports_folder = os.path.join(self.project_folder, 'informes')
