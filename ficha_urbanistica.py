@@ -40,8 +40,8 @@ class FichaUrbanistica:
         filename = os.path.abspath(os.path.join(self.plugin_dir, 'icon.png'))
         self.icon = QIcon(str(filename))
 
-        self.style_doc_path = os.path.join(self.plugin_dir, 'config', 'selected_parcel.qml')
-
+        self.style_doc_path = os.path.join(self.plugin_dir, 'Styles', 'selected_parcel.qml')
+        
         self.action = None
 
         self.dialog = None
