@@ -2,24 +2,28 @@
 """Main file of the project ficha_urbanistica. This contains the main class as well as all the important work."""
 
 import codecs
-import ConfigParser
+import configparser
 import errno
 import io
 import os
 import psycopg2
 import subprocess
 import sys
+import sip
 
-from PyQt4 import QtCore
-from PyQt4.QtCore import QObject, QSettings, Qt, QUrl, SIGNAL
-from PyQt4.QtGui import QAction, QApplication, QCursor, QDialog, QFileDialog, QIcon, QPainter, QPixmap, QPrinter, QPrintDialog
-from qgis.core import QgsExpressionContextUtils, QgsFeature, QgsGeometry, QgsMapLayerRegistry, QgsMessageLog, QgsProject, QgsRectangle
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, QSettings, Qt, QUrl, pyqtSignal
+from qgis.PyQt.QtWidgets import QAction, QApplication,  QDialog, QFileDialog
+from qgis.core import QgsExpressionContextUtils, QgsFeature, QgsGeometry, QgsMessageLog, QgsProject, QgsLayoutExporter
+from qgis.core import QgsRectangle, QgsLayoutItemMap, QgsLayoutMultiFrame, QgsLayoutFrame, QgsLayoutItemLegend
 from qgis.gui import QgsMapTool, QgsMessageBar
+from PyQt5.QtGui import QCursor, QIcon, QPainter, QPixmap
+from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 
-from const import Const
+from .const import Const
 
-from ui.form import Ui_Form
-from ui.docs_view import Ui_DocsView
+from .ui.form import Ui_Form
+from .ui.docs_view import Ui_DocsView
 
 
 class FichaUrbanistica:
@@ -103,7 +107,7 @@ class FichaUrbanistica:
         # Add menu and toolbar entries (basically allows to activate it)
         self.action = QAction(self.icon, u"Fitxa urbanística", self.iface.mainWindow())
         self.action.setCheckable(True)
-        QObject.connect(self.action, SIGNAL('triggered()'), self.activateTool)
+        self.action.triggered.connect(self.activateTool)
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(qu("Ficha urbanística"), self.action)
         self.iface.mapCanvas().mapToolSet.connect(self.deactivateTool)
@@ -141,7 +145,7 @@ class FichaUrbanistica:
         if len(features) < 1:
             return
         elif len(features) > 1:
-            layer.setSelectedFeatures([features[0].id()])
+            layer.selectByIds([features[0].id()])
 
         feature = features[0]
         id_index = feature.fieldNameIndex(self.config.plot_id)
@@ -232,40 +236,40 @@ class FichaUrbanistica:
                 # Disconnect signal
                 self.iface.mapCanvas().mapCanvasRefreshed.disconnect(refreshed)
 
-                # Get composition
                 composition = None
-                for item in self.iface.activeComposers():
-                    if item.composerWindow().windowTitle() == Const.PDF_UBICACIO:
-                        composition = item.composition()
+                for item in QgsProject.instance().layoutManager().printLayouts():
+                    if item.name() == Const.PDF_UBICACIO:
+                        composition = item
                         break
 
                 if composition is None:
                     return
 
                 # Set values
-                QgsExpressionContextUtils.setProjectVariable('refcat', info[Const.REFCAT])
-                QgsExpressionContextUtils.setProjectVariable('area', '{:.0f}'.format(info[Const.AREA]))
-                QgsExpressionContextUtils.setProjectVariable('adreca', info[Const.ADRECA])
+                QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),'refcat', info[Const.REFCAT])
+                QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),'area', '{:.0f}'.format(info[Const.AREA]))
+                QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),'adreca', info[Const.ADRECA])
 
                 # Set main map to the propper position
-                main_map = composition.getComposerItemById('Mapa principal')
+                #main_map = composition.itemById('Mapa principal')
+                #main_map = composition.referenceMap() 
+                main_map=layout_item(composition,'Mapa principal',QgsLayoutItemMap)
                 centerMap(main_map, feature)
 
                 # Add temporal layer to composition
-                legend = composition.getComposerItemById('Llegenda')
-                legend_root = legend.modelV2().rootGroup()
+                legend = layout_item(composition,'Llegenda',QgsLayoutItemLegend)
+                legend_root = legend.model().rootGroup()
                 legend_root.insertLayer(0, vl)
 
                 # Make PDF
-                filename = os.path.join(self.reports_folder, '{}_ubicacio.pdf'.format(info[Const.REFCAT]))
-                if composition.exportAsPDF(filename):
-                    openFile(filename)
-                else:
-                    self.error(u"No s'ha pogut convertir a PDF.")
-
+                filename =os.path.join(self.reports_folder, '{}_ubicacio.pdf'.format(info[Const.REFCAT]))
+                exporter = QgsLayoutExporter(composition)                
+                exporter.exportToPdf(filename,QgsLayoutExporter.PdfExportSettings())
+                openFile(filename)
+                
                 # Delete temporary layer
                 legend_root.removeLayer(vl)
-                QgsMapLayerRegistry.instance().removeMapLayers([vl.id()])
+                QgsProject.instance().removeMapLayers([vl.id()])
 
                 # Repaint again
                 self.iface.mapCanvas().refresh()
@@ -278,38 +282,31 @@ class FichaUrbanistica:
             rows = (row for row in self.cursor.fetchall() if row[Const.ZONES_COLUMNS.index('per_int')] >= 3)
 
             composition = None
-            for item in self.iface.activeComposers():
-                if item.composerWindow().windowTitle() == Const.PDF_ZONES:
-                    composition = item.composition()
+            for item in QgsProject.instance().layoutManager().printLayouts():
+                if item.name() == Const.PDF_ZONES:
+                    composition = item
                     break
+                
             if composition is None:
                 return
-
-            filename = os.path.join(self.reports_folder, '{}_zones.pdf'.format(info[Const.REFCAT]))
-            printer = QPrinter()
-            composition.beginPrintAsPDF(printer, filename)
-            composition.beginPrint(printer, False)
-            painter = QPainter()
-            painter.begin(printer)
-
-            first = True
+ 
+            # Set values
             for data in rows:
-                if first:
-                    first = False
-                else:
-                    printer.newPage()
+                print (data)
                 for i, column in enumerate(Const.ZONES_COLUMNS):
-                    QgsExpressionContextUtils.setProjectVariable(column, data[i])
+                    QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),column, data[i])
                 if info[Const.CODI_SECTOR] is not None:
-                    QgsExpressionContextUtils.setProjectVariable('sec_descripcio', u'{} - {}'.format(info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR]))
+                    QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),'sec_descripcio', u'{} - {}'.format(info[Const.CODI_SECTOR], info[Const.DESCR_SECTOR]))
                 else:
-                    QgsExpressionContextUtils.setProjectVariable('sec_descripcio', None)
-                QgsExpressionContextUtils.setProjectVariable('cla_descripcio', u'{} - {}'.format(info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI]))
-                composition.refreshItems()
-                composition.doPrint(printer, painter)
+                    QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),'sec_descripcio', None)
+                QgsExpressionContextUtils.setProjectVariable(QgsProject.instance(),'cla_descripcio', u'{} - {}'.format(info[Const.CODI_CLASSI], info[Const.DESCR_CLASSI]))
 
-            painter.end()
+            composition.refresh()
+            filename =os.path.join(self.reports_folder, '{}_zones.pdf'.format(info[Const.REFCAT]))
+            exporter = QgsLayoutExporter(composition)                
+            exporter.exportToPdf(filename,QgsLayoutExporter.PdfExportSettings())
             openFile(filename)
+            
 
         def destroyDialog():
             self.dialog = None
@@ -325,7 +322,6 @@ class FichaUrbanistica:
 
     def webDialog(self, url):
         QgsMessageLog.logMessage("Opened url: " + url)
-
         dialog = self.initDialog(Ui_DocsView, Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowMaximizeButtonHint)
         dialog.ui.webView.setUrl(QUrl(url))
 
@@ -371,9 +367,9 @@ class FichaUrbanistica:
             ),
             "PDF (*.pdf)"
         )
-        if path is not None and path != "":
-            self.settings.setValue("save path", os.path.dirname(path))
-            printer.setOutputFileName(path)
+        if path[0] is not None and path != "":
+            self.settings.setValue("save path", os.path.dirname(path[0]))
+            printer.setOutputFileName(path[0])
             return printer
         else:
             return None
@@ -397,18 +393,19 @@ class FichaUrbanistica:
     def error(self, msg):
         # The QGis documentation recommends using the more user-friendly QGIS Message Bar
         # instead of modal message boxes to show information to the user
-        self.iface.messageBar().pushMessage("Error", msg, level=QgsMessageBar.CRITICAL)
+        self.iface.messageBar().pushCritical("Error", msg)
 
         # messageBox = QMessageBox(QMessageBox.Critical, tr("Error"), msg)
         # messageBox.setWindowIcon(self.icon)
         # messageBox.exec_()
-
-
+        
+        
+        
 class Config:
     """Class that loads and shows the configuration"""
 
     def __init__(self, file):
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         try:
             config.readfp(codecs.open(file, 'r', 'utf8'))
         except UnicodeDecodeError:  #unicode error 
@@ -449,7 +446,7 @@ class FichaUrbanisticaTool(QgsMapTool):
     def canvasReleaseEvent(self, e):
         # Activate config layer
         if self.plugin.config.layer_name:
-            registry = QgsMapLayerRegistry.instance()
+            registry = QgsProject.instance()
             layer = registry.mapLayersByName(self.plugin.config.layer_name)[0]
             self.plugin.iface.setActiveLayer(layer)
 
@@ -491,8 +488,8 @@ def get_pgservices_conf(path):
     except IOError:
         return r
 
-    config = ConfigParser.RawConfigParser()
-    config.readfp(io.BytesIO(config_sample))
+    config = configparser.RawConfigParser()
+    config.readfp(io.StringIO(config_sample))
 
     for service in config.sections():
         if (config.has_option(service, 'host') and
@@ -520,9 +517,9 @@ def getServiceUri(config_service):
     this_folder = os.path.dirname(__file__)
     # Look at the pg_config files
     pg_services = get_pgservices_conf(os.path.join(this_folder, 'config', 'pg_service.conf'))
-    pg_services = dict(get_pgservices_conf(os.path.expanduser('~/.pg_service.conf')).items() + pg_services.items())
-    pg_services = dict(get_pgservices_conf(os.path.join(os.environ.get('PGSYSCONFDIR') or '', 'pg_service.conf')).items() + pg_services.items())
-    pg_services = dict(get_pgservices_conf(os.environ.get('PGserviceFILE')).items() + pg_services.items())
+    pg_services.update(get_pgservices_conf(os.path.expanduser('~/.pg_service.conf')))
+    pg_services.update(get_pgservices_conf(os.path.join(os.environ.get('PGSYSCONFDIR') or '', 'pg_service.conf')))
+    pg_services.update(get_pgservices_conf(os.environ.get('PGserviceFILE')))
 
     if config_service:
         return pg_services.get(config_service)
@@ -532,7 +529,7 @@ def getServiceUri(config_service):
 
 def centerMap(map, feature):
     newExtent = centerRect(map.extent(), feature.geometry().boundingBox().center())
-    map.setNewExtent(newExtent)
+    map.setExtent(newExtent)
 
 
 def centerRect(rect, point):
@@ -561,6 +558,35 @@ def askPrinter():
         return printer
     else:
         return None
+    
+
+def layout_item(layout, item_id, item_class):
+    """Fetch a specific item according to its type in a layout.
+    There's some sip casting conversion issues with QgsLayout::itemById.
+    Don't use it, and use this function instead.
+    See https://github.com/inasafe/inasafe/issues/4271
+    :param layout: The layout to look in.
+    :type layout: QgsLayout
+    :param item_id: The ID of the item to look for.
+    :type item_id: basestring
+    :param item_class: The expected class name.
+    :type item_class: cls
+    :return: The layout item, inherited class of QgsLayoutItem.
+    """
+    item = layout.itemById(item_id)
+    if item is None:
+        # no match!
+        return item
+
+    if issubclass(item_class, QgsLayoutMultiFrame):
+        # finding a multiframe by frame id
+        frame = sip.cast(item, QgsLayoutFrame)
+        multi_frame = frame.multiFrame()
+        return sip.cast(multi_frame, item_class)
+    else:
+        # force sip to correctly cast item to required type
+        return sip.cast(item, item_class)
+
 
 
 # Unicode QString generator function

@@ -4,7 +4,7 @@
  ficha_urbanistica - A QGIS plugin that creates GML files of plots for the spainish catastre
                              -------------------
         begin                : 2016-09-19
-        copyright            : (C) 2016 by Martí Angelats
+        copyright            : (C) 2016 by MartÃ­ Angelats
         email                : martiangelats@hotmail.com
         git sha              : $Format:%H$
  ***************************************************************************/
@@ -29,5 +29,14 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .ficha_urbanistica import ficha_urbanistica
-    return ficha_urbanistica(iface)
+    from .ficha_urbanistica import FichaUrbanistica
+
+    # Construct the plugin
+    plugin = FichaUrbanistica(iface)
+
+    # Add plugin project change triggers
+    iface.projectRead.connect(plugin.projectChange)
+    iface.newProjectCreated.connect(plugin.projectChange)
+
+    # return the plugin
+    return plugin
